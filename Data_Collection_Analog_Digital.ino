@@ -103,7 +103,7 @@ unsigned long  readSensorTimeElapsed(int sensorPin) {
 
 
 
-void readAnalogSensorsWithDelay() {
+void readDigitalSensorsWithDelay() {
     // Turn on the IR LEDs to ensure consistent lighting conditions
     pinMode(EMIT_PIN, OUTPUT);
     digitalWrite(EMIT_PIN, HIGH);
