@@ -1,6 +1,12 @@
 #ifndef ANALOG_H 
 #define ANALOG_H 
 #define MAX_SAMPLES 10
+#define EMIT_PIN 11
+#define LS_LEFT_PIN A11  
+#define LS_MIDLEFT_PIN A0   
+#define LS_MIDDLE_PIN A2   
+#define LS_MIDRIGHT_PIN A3  
+#define LS_RIGHT_PIN A4  
 
 class Analog_c {
 
