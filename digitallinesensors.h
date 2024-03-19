@@ -152,6 +152,58 @@ class DigitalLineSensors_c {
 
       }
 
+      // Normalize and calculate variance for each sensor
+      for (int sensor_num = 0; sensor_num < 5; sensor_num++) {
+        normalizeReadings(sensorReadings, MAX_SAMPLES);
+        float variance = calculateVariance(sensorReadings, MAX_SAMPLES);
+        Serial.print("Variance for sensor ");
+        Serial.print(sensor_num);
+        Serial.print(": ");
+        Serial.println(variance);
+      }
+
+    }
+
+    // Normalize a set of readings to be between 0 and 1
+    void normalizeReadings(unsigned long readings[], int numReadings) {
+        unsigned long minVal = readings[0];
+        unsigned long maxVal = readings[0];
+        
+        // Find the min and max values
+        for (int i = 1; i < numReadings; i++) {
+            if (readings[i] < minVal) {
+                minVal = readings[i];
+            }
+            if (readings[i] > maxVal) {
+                maxVal = readings[i];
+            }
+        }
+        
+        // Normalize the readings
+        for (int i = 0; i < numReadings; i++) {
+            readings[i] = (float)(readings[i] - minVal) / (maxVal - minVal);
+        }
+    }
+
+    // Calculate the variance of a set of normalized readings
+    float calculateVariance(unsigned long readings[], int numReadings) {
+        float sum = 0.0;
+        float mean = 0.0;
+        
+        // Calculate the mean
+        for (int i = 0; i < numReadings; i++) {
+            sum += readings[i];
+        }
+        mean = sum / numReadings;
+        
+        // Calculate the variance
+        float variance = 0.0;
+        for (int i = 0; i < numReadings; i++) {
+            variance += pow(readings[i] - mean, 2);
+        }
+        variance /= (numReadings - 1);
+        
+        return variance;
     }
 
 };
