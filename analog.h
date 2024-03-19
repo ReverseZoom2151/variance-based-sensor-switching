@@ -47,6 +47,7 @@ class Analog_c {
               }
              
               delay(10); // Short delay between samples (adjust if needed)
+             return reading;
              
           }
          
