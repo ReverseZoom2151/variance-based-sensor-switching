@@ -1,5 +1,5 @@
-#ifndef LINESENSOR_H
-#define LINESENSOR_H
+#ifndef DIGITALLINESENSORS_H
+#define DIGITALLINESENSORS_H
 #define MAX_SAMPLES 10
 #define EMIT_PIN    11  
 #define LS_LEFT_PIN 12  
@@ -10,7 +10,7 @@
 #define LINE_SENSOR_UPDATE 100
 #define MOTOR_UPDATE 2000 
 
-class LineSensor_c {
+class DigitalLineSensors_c {
 
   private: 
 
@@ -20,7 +20,7 @@ class LineSensor_c {
 
   public:
 
-    LineSensor_c() {}
+    DigitalLineSensors_c() {}
 
     void setupAllLineSensors() {
 
