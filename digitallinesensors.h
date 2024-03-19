@@ -32,69 +32,6 @@ class DigitalLineSensors_c {
 
     }
 
-    void algorithm_2() {
-
-      // collects 10 sensor readings and store in results[]
-      for (int i = 0; i < MAX_SAMPLES; i++) {
-
-        // turns on IR LEDs directly
-        pinMode(EMIT_PIN, OUTPUT); 
-        digitalWrite(EMIT_PIN, HIGH); 
-
-        pinMode(LS_LEFT_PIN, OUTPUT);
-        digitalWrite(LS_LEFT_PIN, HIGH);
-        delayMicroseconds(10);  
-
-        pinMode(LS_LEFT_PIN, INPUT); 
-
-        unsigned long start_time = micros();
-        unsigned long timeout = 5000; 
-
-        while (digitalRead(LS_LEFT_PIN) == HIGH) {
-
-          unsigned long current_time = micros();
-
-          if ((current_time - start_time) > timeout) {
-            
-            results[i] = -1; 
-            break; 
-          
-          }
-
-        }
-
-        // obtains end_time only if successful reading 
-        unsigned long end_time = (results[i] != -1) ? micros() : 0;  
-
-        pinMode(EMIT_PIN, INPUT); // turns off EMIT 
-
-        if (results[i] != -1) {  
-
-          unsigned long elapsed_time = end_time - start_time;
-          results[i] = elapsed_time;
-        
-        }
-
-        delay(200); // optional delay between measurements
-
-      }
-
-      // reports all readings / results, forever 
-      while (true) {
-
-        Serial.println("Results: ");
-
-        for (int i = 0; i < MAX_SAMPLES; i++) {
-          Serial.println(results[i]);
-        }
-
-        // waits before next trial (optional)
-        delay(1000);
-
-      }
-
-    }
-
     // reads a line sensor with error checking
     unsigned long readLineSensor(int number) {
 
