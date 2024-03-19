@@ -7,8 +7,6 @@
 #define LS_MIDDLE_PIN A2   
 #define LS_MIDRIGHT_PIN A3  
 #define LS_RIGHT_PIN A4   
-#define LINE_SENSOR_UPDATE 100
-#define MOTOR_UPDATE 2000 
 
 class DigitalLineSensors_c {
 
