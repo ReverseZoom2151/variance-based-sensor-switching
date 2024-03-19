@@ -21,7 +21,15 @@ class Analog_c {
    public:
    
       Analog_c() {};
-   
+
+     void setupAllLineSensors() {
+        pinMode(EMIT_PIN, INPUT);
+        for (int i = 0; i < 5; i++) {
+           pinMode(ls_pins[i], INPUT);
+        }
+     }
+
+
       void collectReadings(int sensor) {
          if (sensor < 0 || sensor >= 5) {
             Serial.println("Error: Invalid sensor number");
