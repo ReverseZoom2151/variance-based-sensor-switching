@@ -22,7 +22,11 @@ class Analog_c {
    
       Analog_c() {};
    
-      void collectReadings() {
+      void collectReadings(int sensor) {
+         if (sensor < 0 || sensor >= 5) {
+            Serial.println("Error: Invalid sensor number");
+            return;
+         }
          
           for (int sample = 0; sample < MAX_SAMPLES; sample++) {
              
@@ -48,7 +52,11 @@ class Analog_c {
          
       }
    
-      void normalizeReadings() {
+      void normalizeReadings(int sensor) {
+         if (sensor < 0 || sensor >= 5) {
+            Serial.println("Error: Invalid sensor number");
+            return;
+         }
          
           for (int sensor = 0; sensor < 5; sensor++) {
              
@@ -63,6 +71,10 @@ class Analog_c {
       }
    
       float calculateVariance(int sensor) {
+         if (sensor < 0 || sensor >= 5) {
+            Serial.println("Error: Invalid sensor number");
+            return;
+         }
          
          float sum = 0.0, sumSquare = 0.0, mean, meanSquare, variance;
          
