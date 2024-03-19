@@ -94,6 +94,33 @@ class Analog_c {
          
        }
 
+void readAnalogSensorsWithVariance() {
+    // Collect readings for all sensors (you might optimize this later)
+    for (int sensor = 0; sensor < 5; sensor++) {
+        collectReadings(sensor); 
+    }
+
+    Serial.println("Sensor Readings and Variances:"); // Adjusted header
+
+    for (int sensor = 0; sensor < 5; sensor++) {
+        Serial.print("Sensor ");
+        Serial.print(sensor);
+        Serial.print(": ");
+
+        // Print raw readings (optional)
+        // for (int sample = 0; sample < MAX_SAMPLES; sample++) {
+        //    Serial.print(readings[sensor][sample]);
+        //    Serial.print(" ");
+        // }
+
+        normalizeReadings(sensor); // Normalize before variance calculation
+        float variance = calculateVariance(sensor); 
+
+        Serial.print("Variance: ");
+        Serial.println(variance);
+    }
+}
+
 };
 
 #endif 
