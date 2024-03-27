@@ -20,6 +20,7 @@ int results_index;
 int state;
 
 void setup() {
+  
   // put your setup code here, to run once:
 
   Serial.begin(9600);
@@ -40,9 +41,9 @@ void setup() {
   // Stop spinning!
   motors.setMotorsPWM( 0, 0 );
 
-
   // Some beeping + delay so you can move it to the start location
   int count = 0;
+  
   while ( count < 10 ) {
 
     pinMode( 6, OUTPUT );
@@ -51,6 +52,7 @@ void setup() {
     analogWrite(6, 0 );
     delay(500);
     count++;
+    
   }
 
 
@@ -64,18 +66,16 @@ void setup() {
   //a_sensors.getCalibrated();
   //a_sensors.printCalibrated();
 
+  //a_sensors.calculateVariance();
+  //a_sensors.printVariance();
+
   //d_sensors.getCalibrated();
   // d_sensors.printCalibrated();
 
   //d_sensors.calculateVariance();
   //d_sensors.printVariance();
 
-  //a_sensors.calculateVariance();
-  //a_sensors.printVariance();
-
-
   //}
-
 
   // Prepare to start.
   update_ts = millis();
