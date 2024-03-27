@@ -1,25 +1,23 @@
 
 #include "analoglinesensors.h"
 #include "digitallinesensors.h"
-
 #include "motors.h"
 
-AnalogLineSensors_c   a_sensors;
-DigitalLineSensors_c  d_sensors;
+#define MAX_RESULTS 100
+#define STATE_RUNNING_TRIAL 0
+#define STATE_PRINT_RESULTS 1
+
+AnalogLineSensors_c a_sensors;
+DigitalLineSensors_c d_sensors;
 
 // For motor control
 Motors_c motors;
 
 // variables for storing results
 unsigned long update_ts;
-#define MAX_RESULTS 100
 float results[ MAX_RESULTS ];
 int results_index;
-
 int state;
-#define STATE_RUNNING_TRIAL 0
-#define STATE_PRINT_RESULTS 1
-
 
 void setup() {
   // put your setup code here, to run once:
