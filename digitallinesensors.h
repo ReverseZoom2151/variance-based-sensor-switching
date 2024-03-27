@@ -91,6 +91,7 @@ class DigitalLineSensors_c {
 
     // You can call this to get calibrated sensor readings
     // during the operation of the robot.
+    // We apply the offset and scale factor to the sensor readings to get the calibrated values.
     void getCalibrated() {
       readAllSensors();
 
