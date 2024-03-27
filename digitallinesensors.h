@@ -75,7 +75,7 @@ class DigitalLineSensors_c {
 
       // Determine calibration values
       for ( int i = 0; i < 5; i++ ) {
-        offset[i] = (float)min_values[i];
+        offset[i] = min_values[i];
 
         // Being cautious with type conversion (int to float)
         float temp;
