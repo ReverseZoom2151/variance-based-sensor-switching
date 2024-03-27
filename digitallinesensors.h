@@ -16,19 +16,19 @@ class DigitalLineSensors_c {
 
     int sensorReadings[5]; // array to store readings
 
-    // to store normalised readings later.
-    float calibrated[5];
-
     // Paul: variables to store calibration values
     // for each sensor, which are then applied
     // to all future sensor readings.
     float offset[5];
     float scale[5];
 
+  public:
+
+    // to store normalised readings later.
+    float calibrated[5];
+
     // variance for each sensor
     float variance[5];
-
-  public:
 
     DigitalLineSensors_c() {}
 
