@@ -15,11 +15,6 @@ class AnalogLineSensors_c {
     int ls_pins[5] = { LS_LEFT_PIN, LS_MIDLEFT_PIN, LS_MIDDLE_PIN, LS_MIDRIGHT_PIN, LS_RIGHT_PIN }; // stores pin numbers for convenient access
     int sensorReadings[5]; // array to store readings
 
-    float variance[5];
-
-    // to store normalised readings later.
-    float calibrated[5];
-
     // Paul: variables to store calibration values
     //       for each sensor, which are then applied
     //       to all future sensor readings.
@@ -27,6 +22,11 @@ class AnalogLineSensors_c {
     float scale[5];
 
   public:
+
+    float variance[5];
+
+    // to store normalised readings later.
+    float calibrated[5];
 
     AnalogLineSensors_c() {}
 
