@@ -36,7 +36,6 @@ class AnalogLineSensors_c {
       digitalWrite(EMIT_PIN, HIGH); // turn on IR LEDs
 
       for (int i = 0; i < 5; i++) {
-
         // Paul: this needs to be INPUT_PULLUP
         //pinMode(ls_pins[i], INPUT);
         pinMode(ls_pins[i], INPUT_PULLUP);
