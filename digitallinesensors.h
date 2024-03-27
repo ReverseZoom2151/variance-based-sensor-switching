@@ -67,7 +67,7 @@ class DigitalLineSensors_c {
           if ( sensorReadings[i] < min_values[i] ) min_values[i] = sensorReadings[i];
         }
 
-        // 10ms * 50 = 1 second to capture min/max
+        // 10ms * 50 = 1/2 seconds to capture min/max
         delay(10);
 
         count++;
