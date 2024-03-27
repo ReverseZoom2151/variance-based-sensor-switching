@@ -1,22 +1,12 @@
 #ifndef ANALOGLINESENSORS_H
 #define ANALOGLINESENSORS_H
-
 #define MAX_SAMPLES 10
 #define EMIT_PIN    11
-
-// Paul: wrong pins here - oops!
-//#define LS_LEFT_PIN A0
-//#define LS_MIDLEFT_PIN A1
-//#define LS_MIDDLE_PIN A2
-//#define LS_MIDRIGHT_PIN A3
-//#define LS_RIGHT_PIN A4
 #define LS_LEFT_PIN A11
 #define LS_MIDLEFT_PIN A0
 #define LS_MIDDLE_PIN A2
 #define LS_MIDRIGHT_PIN A3
 #define LS_RIGHT_PIN A4
-
-
 
 class AnalogLineSensors_c {
 
