@@ -79,8 +79,8 @@ class DigitalLineSensors_c {
 
         // Being cautious with type conversion (int to float)
         float temp;
-        temp = (float)max_values[i];  // Get max
-        temp -= (float)min_values[i]; // subtract min, gives range.
+        temp = max_values[i];  // Get max
+        temp -= min_values[i]; // subtract min, gives range.
         temp = 1.0 / temp;            // 1 over creates a scaling factor
         scale[i] = temp;
       }
