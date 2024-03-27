@@ -1,4 +1,3 @@
-
 #include "analoglinesensors.h"
 #include "digitallinesensors.h"
 #include "motors.h"
@@ -15,9 +14,138 @@ Motors_c motors;
 
 // variables for storing results
 unsigned long update_ts;
-float results[ MAX_RESULTS ];
+float results[MAX_RESULTS];
 int results_index;
 int state;
+const float BiasPWM = 30.0; // starts with a positive forward bias
+const float MaxTurnPWM = 20.0; 
+
+bool digitalLineDetected() {
+
+  unsigned long digitalLeftSensorReading = d_sensors.readLineSensor(1); // DN2
+  unsigned long digitalMiddleSensorReading = d_sensors.readLineSensor(2); // DN3
+  unsigned long digitalRightSensorReading = d_sensors.readLineSensor(3); // DN4
+
+  // reads all three line sensors through the digital method and determines if any sensor detects the line
+  return ((digitalLeftSensorReading >= SENSOR_THRESHOLD) || (digitalMiddleSensorReading >= SENSOR_THRESHOLD) || (digitalRightSensorReading >= SENSOR_THRESHOLD));
+
+}
+
+bool analogLineDetected() {
+
+  unsigned long analogLeftSensorReading = a_sensors.readLineSensor(1); // DN2
+  unsigned long analogMiddleSensorReading = a_sensors.readLineSensor(2); // DN3
+  unsigned long analogRightSensorReading = a_sensors.readLineSensor(3); // DN4
+
+  // reads all three line sensors through the analog method and determines if any sensor detects the line
+  return ((analogLeftSensorReading >= SENSOR_THRESHOLD) || (analogMiddleSensorReading >= SENSOR_THRESHOLD) || (analogRightSensorReading >= SENSOR_THRESHOLD));
+
+}
+
+float analogWeightedMeasurement() {
+
+  unsigned long analogLeftSensorReading = a_sensors.readLineSensor(1); // DN2
+  unsigned long analogRightSensorReading = a_sensors.readLineSensor(3); // DN4
+  unsigned long sum = analogLeftSensorReading + analogRightSensorReading;
+
+  float analogLeftNormalized = (float)analogLeftSensorReading / sum;
+  float analogRightNormalized = (float)analogRightSensorReading / sum;
+  float analogLeftWeighted = 2.0 * analogLeftNormalized;
+  float analogRightWeighted = 2.0 * analogRightNormalized;
+  float W = analogRightWeighted - analogLeftWeighted;
+  // float W = analogLeftWeighted - analogRightWeighted;
+
+  // Serial.print("Analog Weighted Measurement (W): ");
+  // Serial.println(W); 
+
+  return W;
+
+}
+
+float digitalWeightedMeasurement() {
+
+  unsigned long digitalLeftSensorReading = d_sensors.readLineSensor(1); // DN2
+  unsigned long digitalRightSensorReading = d_sensors.readLineSensor(3); // DN4
+  unsigned long sum = digitalLeftSensorReading + digitalRightSensorReading;
+
+  float digitalLeftNormalized = (float)digitalLeftSensorReading / sum;
+  float digitalRightNormalized = (float)digitalRightSensorReading / sum;
+  float digitalLeftWeighted = 2.0 * digitalLeftNormalized;
+  float digitalRightWeighted = 2.0 * digitalRightNormalized;
+  float W = digitalRightWeighted - digitalLeftWeighted;
+  // float W = digitalLeftWeighted - digitalRightWeighted;
+
+  // Serial.print("Digital Weighted Measurement (W): ");
+  // Serial.println(W); 
+
+  return W;
+
+}
+
+void analogFollowLine() {
+
+  unsigned long analogFarLeftSensorReading = a_sensors.readLineSensor(0); // DN1
+  unsigned long analogLeftSensorReading = a_sensors.readLineSensor(1); // DN2
+  unsigned long analogMiddleSensorReading = a_sensors.readLineSensor(2); // DN3
+  unsigned long analogRightSensorReading = a_sensors.readLineSensor(3); // DN4
+  unsigned long analogFarRightSensorReading = a_sensors.readLineSensor(4); // DN5
+
+  if (analogLineDetected()) { 
+
+    float W = analogWeightedMeasurement();
+    float LeftPWM = BiasPWM + (MaxTurnPWM * W);
+    float RightPWM = BiasPWM - (MaxTurnPWM * W);
+    
+    motors.setMotorsPWM(LeftPWM, RightPWM);  
+  
+  }
+
+  
+  if (analogFarLeftSensorReading >= SENSOR_THRESHOLD && analogLineDetected()) {
+
+    // executes a sharp left turn for corners (90 degrees)
+    motors.spinLeft(BiasPWM, 250);
+  
+  } else if (analogFarRightSensorReading >= SENSOR_THRESHOLD && analogLineDetected()) {
+
+    // executes a sharp left turn for corners (90 degrees)
+    motors.spinRight(BiasPWM, 250);
+  
+  }
+
+}
+
+void digitalFollowLine() {
+
+  unsigned long digitalFarLeftSensorReading = d_sensors.readLineSensor(0); // DN1
+  unsigned long digitalLeftSensorReading = d_sensors.readLineSensor(1); // DN2
+  unsigned long digitalMiddleSensorReading = d_sensors.readLineSensor(2); // DN3
+  unsigned long digitalRightSensorReading = d_sensors.readLineSensor(3); // DN4
+  unsigned long digitalFarRightSensorReading = d_sensors.readLineSensor(4); // DN5
+
+  if (digitalLineDetected()) { 
+
+    float W = digitalWeightedMeasurement();
+    float LeftPWM = BiasPWM + (MaxTurnPWM * W);
+    float RightPWM = BiasPWM - (MaxTurnPWM * W);
+    
+    motors.setMotorsPWM(LeftPWM, RightPWM);  
+  
+  }
+
+  if (digitalFarLeftSensorReading >= SENSOR_THRESHOLD && digitalLineDetected()) {
+
+    // executes a sharp left turn for corners (90 degrees)
+    motors.spinLeft(BiasPWM, 250);
+  
+  } else if (digitalFarRightSensorReading >= SENSOR_THRESHOLD && digitalLineDetected()) {
+
+    // executes a sharp left turn for corners (90 degrees)
+    motors.spinRight(BiasPWM, 250);
+  
+  }
+
+}
 
 void setup() {
   
@@ -44,12 +172,12 @@ void setup() {
   // Some beeping + delay so you can move it to the start location
   int count = 0;
   
-  while ( count < 10 ) {
+  while (count < 10) {
 
-    pinMode( 6, OUTPUT );
-    analogWrite(6, 120 );
+    pinMode(6, OUTPUT);
+    analogWrite(6, 120);
     delay(5);
-    analogWrite(6, 0 );
+    analogWrite(6, 0);
     delay(500);
     count++;
     
@@ -83,29 +211,29 @@ void setup() {
 
 }
 
-
 void loop() {
 
-  if ( state == STATE_RUNNING_TRIAL ) {
+  if (state == STATE_RUNNING_TRIAL) {
     
     // Every 100ms...
-    if ( millis() - update_ts > 100 ) {
+    if (millis() - update_ts > 100) {
       
       update_ts = millis();
 
-      // Some behaviuor code here?
-      // ...
-      // ...
+      // Some behaviour code here:
+      digitalFollowLine();
+      analogFollowLine();
       d_sensors.getCalibrated();
+      a_sensors.getCalibrated();
 
-      if ( results_index < MAX_RESULTS ) {
+      if (results_index < MAX_RESULTS) {
 
         // Just as an example.
         // This could be any other variable from your
         // system.
-        results[ results_index ] = (float)millis();
+        results[results_index] = (float)millis();
 
-        // incrment for next time.
+        // increment for next time.
         results_index++;
 
       } else {
@@ -114,30 +242,32 @@ void loop() {
         state = STATE_PRINT_RESULTS;
 
         // Might as well stop the robot
-        motors.setMotorsPWM( 0, 0 );
+        motors.setMotorsPWM(0, 0);
 
         // Beep to signal end
-        pinMode( 6, OUTPUT );
-        analogWrite(6, 120 );
+        pinMode(6, OUTPUT);
+        analogWrite(6, 120);
         delay(5);
-        analogWrite(6, 0 );
+        analogWrite(6, 0);
 
       }
 
     }
     
-  } else if ( state == STATE_PRINT_RESULTS ) {
+  } else if (state == STATE_PRINT_RESULTS) {
 
     // Just print the results, and give a delay so
-    // you have time to copy-pasta
-    for ( int i = 0; i < MAX_RESULTS; i++ ) {
-      Serial.print( results[i] );
+    // you have time to copy-paste
+    for (int i = 0; i < MAX_RESULTS; i++) {
+
+      Serial.print(results[i]);
       Serial.print(",");
+    
     }
     
     Serial.print("\n\n\n");
 
-    delay( 3000 );
+    delay(3000);
 
   }
 
