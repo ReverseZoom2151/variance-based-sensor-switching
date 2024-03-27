@@ -78,6 +78,7 @@ class DigitalLineSensors_c {
         offset[i] = min_values[i];
 
         // Being cautious with type conversion (int to float)
+        // Normalises readings for calibrated values to range between 0 and 1 using scale factor 
         float temp;
         temp = max_values[i];  // Get max
         temp -= min_values[i]; // subtract min, gives range.
