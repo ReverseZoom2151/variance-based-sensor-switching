@@ -43,6 +43,26 @@ class AnalogLineSensors_c {
 
     }
 
+    void readAllSensors() {
+
+      // Paul: adding the below to ensure the line
+      //       sensors are set up properly before
+      //       an analog read.
+      setupAllLineSensors();
+
+      // collects MAX_SAMPLES readings for each of the 5 sensors
+      for (int i = 0; i < MAX_SAMPLES; i++) {
+
+        for (int sensor_num = 0; sensor_num < 5; sensor_num++) {
+
+          sensorReadings[sensor_num] = (int)analogRead(ls_pins[sensor_num]);
+
+        }
+
+      }
+
+    }
+
     void calibrate() {
       
       int min_values[5];
@@ -138,26 +158,6 @@ class AnalogLineSensors_c {
       
       Serial.print("\n");
     
-    }
-
-    void readAllSensors() {
-
-      // Paul: adding the below to ensure the line
-      //       sensors are set up properly before
-      //       an analog read.
-      setupAllLineSensors();
-
-      // collects MAX_SAMPLES readings for each of the 5 sensors
-      for (int i = 0; i < MAX_SAMPLES; i++) {
-
-        for (int sensor_num = 0; sensor_num < 5; sensor_num++) {
-
-          sensorReadings[sensor_num] = (int)analogRead(ls_pins[sensor_num]);
-
-        }
-
-      }
-
     }
 
     // Calculate the variance of a set of normalized readings
