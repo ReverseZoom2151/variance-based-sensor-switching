@@ -49,8 +49,8 @@ class DigitalLineSensors_c {
 
 
     void calibrate() {
-      int min_values[5];
-      int max_values[5];
+      float min_values[5];
+      float max_values[5];
 
       // Initialise
       for ( int i = 0; i < 5; i++ ) {
