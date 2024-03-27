@@ -55,7 +55,6 @@ void setup() {
     
   }
 
-
   // Paul: debugging
   //        testing both analog and digital can be done
   //        one after the other, seems to work :)
@@ -88,8 +87,10 @@ void setup() {
 void loop() {
 
   if ( state == STATE_RUNNING_TRIAL ) {
+    
     // Every 100ms...
     if ( millis() - update_ts > 100 ) {
+      
       update_ts = millis();
 
       // Some behaviuor code here?
@@ -108,6 +109,7 @@ void loop() {
         results_index++;
 
       } else {
+        
         // filled up results array? experiment over.
         state = STATE_PRINT_RESULTS;
 
@@ -123,6 +125,7 @@ void loop() {
       }
 
     }
+    
   } else if ( state == STATE_PRINT_RESULTS ) {
 
     // Just print the results, and give a delay so
@@ -131,6 +134,7 @@ void loop() {
       Serial.print( results[i] );
       Serial.print(",");
     }
+    
     Serial.print("\n\n\n");
 
     delay( 3000 );
