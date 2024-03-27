@@ -23,8 +23,8 @@ class DigitalLineSensors_c {
     float calibrated[5];
 
     // Paul: variables to store calibration values
-    //       for each sensor, which are then applied
-    //       to all future sensor readings.
+    // for each sensor, which are then applied
+    // to all future sensor readings.
     float offset[5];
     float scale[5];
 
@@ -35,93 +35,6 @@ class DigitalLineSensors_c {
 
     DigitalLineSensors_c() {}
 
-    // Paul: this isn't so useful for a digital read.
-    //       commenting out.
-    //    void setupAllLineSensors() {
-    //
-    //      pinMode(EMIT_PIN, INPUT);
-    //
-    //      for (int i = 0; i < 5; i++) {
-    //        pinMode(ls_pins[i], INPUT);
-    //      }
-    //
-    //    }
-
-
-    void calibrate() {
-      float min_values[5];
-      float max_values[5];
-
-      // Initialise
-      for ( int i = 0; i < 5; i++ ) {
-        min_values[i] = 9999.9;
-        max_values[i] = -9999.9;
-      }
-
-      int count = 0;
-      while ( count < 50 ) { // repeat 50 times
-
-        readAllSensors();
-        for ( int i = 0; i < 5; i++ ) {
-          if ( sensorReadings[i] > max_values[i] ) max_values[i] = sensorReadings[i];
-          if ( sensorReadings[i] < min_values[i] ) min_values[i] = sensorReadings[i];
-        }
-
-        // 10ms * 50 = 1/2 seconds to capture min/max
-        delay(10);
-
-        count++;
-      }
-
-      // Determine calibration values
-      for ( int i = 0; i < 5; i++ ) {
-        offset[i] = min_values[i];
-
-        // Being cautious with type conversion (int to float)
-        // Normalises readings for calibrated values to range between 0 and 1 using scale factor 
-        float temp;
-        temp = max_values[i];  // Get max
-        temp -= min_values[i]; // subtract min, gives range.
-        temp = 1.0 / temp;            // 1 over creates a scaling factor
-        scale[i] = temp;
-      }
-
-      // done
-    }
-
-    // You can call this to get calibrated sensor readings
-    // during the operation of the robot.
-    // We apply the offset and scale factor to the sensor readings to get the calibrated values.
-    void getCalibrated() {
-      readAllSensors();
-
-      for ( int i = 0; i < 5; i++ ) {
-        calibrated[i] = (float)sensorReadings[i];
-        calibrated[i] -= offset[i];
-        calibrated[i] *= scale[i];
-      }
-
-    }
-
-    // Paul: helpful
-    void printCalibrated() {
-      for ( int i = 0; i < 5; i++ ) {
-        Serial.print( calibrated[i] );
-        Serial.print(",");
-      }
-      Serial.print("\n");
-    }
-    // Paul: helpful
-    void printVariance() {
-      for ( int i = 0; i < 5; i++ ) {
-        Serial.print( variance[i], 6 ); // ,6 = print 6 decimal places
-        Serial.print(",");
-      }
-      Serial.print("\n");
-    }
-
-
-
     // Paul: reads all line sensors in a single function
     void readAllSensors() {
 
@@ -131,6 +44,7 @@ class DigitalLineSensors_c {
 
       // Charge capacitors
       for ( int i = 0; i < 5; i++ ) {
+        
         pinMode( ls_pins[i], OUTPUT );
         digitalWrite( ls_pins[i], HIGH );
 
@@ -139,11 +53,13 @@ class DigitalLineSensors_c {
         sensorReadings[i] = 0;
 
       }
+      
       delayMicroseconds(10);
 
       // Set all sensor pins back to input
-      for ( int i = 0; i < 5; i++ ) pinMode( ls_pins[i], INPUT );
-
+      for ( int i = 0; i < 5; i++ ) {
+        pinMode( ls_pins[i], INPUT );
+      }
 
       // Now to read...
       int remaining = 5;
@@ -158,11 +74,13 @@ class DigitalLineSensors_c {
 
             // If low, now we record time elapsed
             if ( digitalRead( ls_pins[i] ) == LOW ) {
+              
               unsigned long dt =  micros() - start_time;
               sensorReadings[i] = (int)dt;
 
               // Reduce count as this one has completed.
               remaining--;
+              
             } // if low
 
           } // if initial value
@@ -175,13 +93,105 @@ class DigitalLineSensors_c {
 
     }
 
+    void calibrate() {
+      
+      float min_values[5];
+      float max_values[5];
+
+      // Initialise
+      for ( int i = 0; i < 5; i++ ) {
+        min_values[i] = 9999.9;
+        max_values[i] = -9999.9;
+      }
+
+      int count = 0;
+      
+      while ( count < 50 ) { // repeat 50 times
+
+        readAllSensors();
+        
+        for ( int i = 0; i < 5; i++ ) {
+          if ( sensorReadings[i] > max_values[i] ) max_values[i] = sensorReadings[i];
+          if ( sensorReadings[i] < min_values[i] ) min_values[i] = sensorReadings[i];
+        }
+
+        // 10ms * 50 = 1/2 seconds (500ms) to capture min/max
+        delay(10);
+
+        count++;
+        
+      }
+
+      // Determine calibration values
+      for ( int i = 0; i < 5; i++ ) {
+        
+        offset[i] = min_values[i];
+
+        // Being cautious with type conversion (int to float)
+        // Normalises readings for calibrated values to range between 0 and 1 using scale factor 
+        float temp;
+        temp = max_values[i];  // Get max
+        temp -= min_values[i]; // subtract min, gives range.
+        temp = 1.0 / temp;     // 1 over creates a scaling factor
+        scale[i] = temp;
+      
+      }
+
+      // done
+      
+    }
+
+    // You can call this to get calibrated sensor readings
+    // during the operation of the robot.
+    // We apply the offset and scale factor to the sensor readings to get the calibrated values.
+    void getCalibrated() {
+      
+      readAllSensors();
+
+      for ( int i = 0; i < 5; i++ ) {
+      
+        calibrated[i] = (float)sensorReadings[i];
+        calibrated[i] -= offset[i];
+        calibrated[i] *= scale[i];
+      
+      }
+
+    }
+
+    // Paul: helpful
+    void printCalibrated() {
+      
+      for ( int i = 0; i < 5; i++ ) {
+        Serial.print( calibrated[i] );
+        Serial.print(",");
+      }
+      
+      Serial.print("\n");
+    
+    }
+
+    // Paul: helpful
+    void printVariance() {
+      
+      for ( int i = 0; i < 5; i++ ) {
+        Serial.print( variance[i], 6 ); // ,6 = print 6 decimal places
+        Serial.print(",");
+      }
+      
+      Serial.print("\n");
+    
+    }
+
     // Paul: helpful
     void printReadings() {
+      
       for ( int i = 0; i < 5; i++ ) {
         Serial.print( sensorReadings[i] );
         Serial.print(",");
       }
+      
       Serial.print("\n");
+    
     }
 
     // reads a line sensor with error checking
@@ -217,75 +227,6 @@ class DigitalLineSensors_c {
 
     }
 
-    //    void multipleSensors() {
-    //
-    //      // collects MAX_SAMPLES readings for each of the 5 sensors
-    //      for (int i = 0; i < MAX_SAMPLES; i++) {
-    //
-    //        for (int sensor_num = 0; sensor_num < 5; sensor_num++) {
-    //
-    //          sensorReadings[sensor_num] = readLineSensor(sensor_num);
-    //          delay(200);
-    //
-    //        }
-    //
-    //        // reports results for set of readings
-    //        Serial.print("[");
-    //        Serial.print(i); // greyscale index (adjust if needed)
-    //
-    //        for (int sensor_num = 0; sensor_num < 5; sensor_num++) {
-    //
-    //          Serial.print(", ");
-    //          Serial.print(sensorReadings[sensor_num]);
-    //
-    //        }
-    //
-    //        Serial.println("]");
-    //
-    //      }
-    //
-    //      // Normalize and calculate variance for each sensor
-    //      for (int sensor_num = 0; sensor_num < 5; sensor_num++) {
-    //
-    //        normalizeReadings(sensorReadings, MAX_SAMPLES);
-    //
-    //        float variance = calculateVariance(sensorReadings, MAX_SAMPLES);
-    //
-    //        Serial.print("Variance for sensor ");
-    //        Serial.print(sensor_num);
-    //        Serial.print(": ");
-    //        Serial.println(variance);
-    //
-    //      }
-    //
-    //    }
-
-    // Normalize a set of readings to be between 0 and 1
-    //    void normalizeReadings(unsigned long readings[], int numReadings) {
-    //
-    //      unsigned long minVal = readings[0];
-    //      unsigned long maxVal = readings[0];
-    //
-    //      // Find the min and max values
-    //      for (int i = 1; i < numReadings; i++) {
-    //
-    //        if (readings[i] < minVal) {
-    //          minVal = readings[i];
-    //        }
-    //
-    //        if (readings[i] > maxVal) {
-    //          maxVal = readings[i];
-    //        }
-    //
-    //      }
-    //
-    //      // Normalize the readings
-    //      for (int i = 0; i < numReadings; i++) {
-    //        readings[i] = (float)(readings[i] - minVal) / (maxVal - minVal);
-    //      }
-    //
-    //    }
-
     // Calculate the variance of a set of normalized readings
     // Paul: I think we can save a bit of memory by collecting
     //       our samples within this function.
@@ -308,10 +249,12 @@ class DigitalLineSensors_c {
 
         // Copy for each sensor into samples array
         for ( int sensor = 0; sensor < 5; sensor++ ) {
+          
           samples[ sensor ][ sample ] = calibrated[ sensor ];
 
           // Might as well capture sum whilst were here
           sum[ sensor ] += calibrated[ sensor ];
+          
         }
 
       }
@@ -329,6 +272,7 @@ class DigitalLineSensors_c {
           for( int sample = 0; sample < num_samples; sample++ ) {
             variance[sensor] += pow( samples[sensor][sample] - mean[sensor], 2);
           }
+        
           variance[sensor] /= (float)num_samples;
 
       }
