@@ -12,7 +12,7 @@ class AnalogLineSensors_c {
 
   private:
 
-    int ls_pins[5] = { LS_LEFT_PIN, LS_MIDLEFT_PIN, LS_MIDDLE_PIN, LS_MIDRIGHT_PIN, LS_RIGHT_PIN }; // stores pin numbers for convenient access
+    int ls_pins[5] = {LS_LEFT_PIN, LS_MIDLEFT_PIN, LS_MIDDLE_PIN, LS_MIDRIGHT_PIN, LS_RIGHT_PIN}; // stores pin numbers for convenient access
     int sensorReadings[5]; // array to store readings
 
     // Paul: variables to store calibration values
@@ -23,10 +23,8 @@ class AnalogLineSensors_c {
 
   public:
 
+    float calibrated[5]; // to store normalised readings later.
     float variance[5];
-
-    // to store normalised readings later.
-    float calibrated[5];
 
     AnalogLineSensors_c() {}
 
@@ -36,10 +34,47 @@ class AnalogLineSensors_c {
       digitalWrite(EMIT_PIN, HIGH); // turn on IR LEDs
 
       for (int i = 0; i < 5; i++) {
+
         // Paul: this needs to be INPUT_PULLUP
         //pinMode(ls_pins[i], INPUT);
         pinMode(ls_pins[i], INPUT_PULLUP);
+      
       }
+
+    }
+
+    unsigned long readLineSensor(int number) {
+
+      // Check for valid sensor number to prevent out-of-bounds access
+      if (number < 0 || number >= 5) {
+
+        Serial.println("Error: sensor number out of range");
+        
+        return -1; // Return an error indication
+      
+      }
+
+      // Turn on IR LED to ensure reflective readings are consistent
+      pinMode(EMIT_PIN, OUTPUT);
+      digitalWrite(EMIT_PIN, HIGH);
+
+      // No need to set pinMode for the sensor pin as INPUT_PULLUP,
+      // because analogRead automatically configures the pin as an input.
+      // Delay is not strictly necessary for analogRead but could be included
+      // for consistency with digital version or specific sensor characteristics.
+      delayMicroseconds(10);
+
+      // Read the analog value from the specified sensor
+      int reading = analogRead(ls_pins[number]);
+
+      // Optionally, turn off the IR LED if you want to conserve power
+      // and if it doesn't interfere with subsequent readings
+      digitalWrite(EMIT_PIN, LOW);
+
+      // Return the reading. Note that we're keeping the return type as unsigned long
+      // for consistency with the digital version, even though analog readings are int.
+      // This is a design choice; adjust as necessary for your application.
+      return (unsigned long)reading;
 
     }
 
@@ -65,24 +100,37 @@ class AnalogLineSensors_c {
 
     void calibrate() {
       
-      int min_values[5];
-      int max_values[5];
+      float min_values[5];
+      float max_values[5];
 
       // Initialise
-      for ( int i = 0; i < 5; i++ ) {
+      for (int i = 0; i < 5; i++) {
+
         min_values[i] = 9999.9;
         max_values[i] = -9999.9;
+
       }
 
       int count = 0;
       
-      while ( count < 50 ) { // repeat 50 times
+      while (count < 50 ) { // repeat 50 times
 
         readAllSensors();
         
-        for ( int i = 0; i < 5; i++ ) {
-          if ( sensorReadings[i] > max_values[i] ) max_values[i] = sensorReadings[i];
-          if ( sensorReadings[i] < min_values[i] ) min_values[i] = sensorReadings[i];
+        for (int i = 0; i < 5; i++ ) {
+
+          if (sensorReadings[i] > max_values[i]) {
+            
+            max_values[i] = sensorReadings[i];
+
+          }
+
+          if (sensorReadings[i] < min_values[i]) {
+            
+            min_values[i] = sensorReadings[i];
+
+          }
+
         }
 
         // 10ms * 50 = 0.5 second to capture min/max
@@ -93,14 +141,14 @@ class AnalogLineSensors_c {
       }
 
       // Determine calibration values
-      for ( int i = 0; i < 5; i++ ) {
+      for (int i = 0; i < 5; i++) {
         
-        offset[i] = (float)min_values[i];
+        offset[i] = min_values[i];
 
         // Being cautious with type conversion (int to float)
         float temp;
-        temp = (float)max_values[i];  // Get max
-        temp -= (float)min_values[i]; // subtract min, gives range.
+        temp = max_values[i];  // Get max
+        temp -= min_values[i]; // subtract min, gives range.
         temp = 1.0 / temp;            // 1 over creates a scaling factor
         scale[i] = temp;
       
@@ -116,10 +164,12 @@ class AnalogLineSensors_c {
       
       readAllSensors();
 
-      for ( int i = 0; i < 5; i++ ) {
+      for (int i = 0; i < 5; i++) {
+
         calibrated[i] = (float)sensorReadings[i];
         calibrated[i] -= offset[i];
         calibrated[i] *= scale[i];
+
       }
 
     }
@@ -127,9 +177,11 @@ class AnalogLineSensors_c {
     // Paul: helpful
     void printCalibrated() {
       
-      for ( int i = 0; i < 5; i++ ) {
-        Serial.print( calibrated[i] );
+      for (int i = 0; i < 5; i++) {
+
+        Serial.print(calibrated[i]);
         Serial.print(",");
+
       }
       
       Serial.print("\n");
@@ -139,9 +191,11 @@ class AnalogLineSensors_c {
     // Paul: helpful
     void printVariance() {
       
-      for ( int i = 0; i < 5; i++ ) {
-        Serial.print( variance[i], 6 ); // ,6 = print 6 decimal places
+      for (int i = 0; i < 5; i++) {
+
+        Serial.print(variance[i], 6); // ,6 = print 6 decimal places
         Serial.print(",");
+
       }
     
       Serial.print("\n");
@@ -151,9 +205,11 @@ class AnalogLineSensors_c {
     // Paul: helpful
     void printReadings() {
       
-      for ( int i = 0; i < 5; i++ ) {
-        Serial.print( sensorReadings[i] );
+      for (int i = 0; i < 5; i++) {
+
+        Serial.print(sensorReadings[i]);
         Serial.print(",");
+      
       }
       
       Serial.print("\n");
@@ -163,48 +219,53 @@ class AnalogLineSensors_c {
     // Calculate the variance of a set of normalized readings
     // Paul: I think we can save a bit of memory by collecting
     //       our samples within this function.
-    float calculateVariance( ) {
+    float calculateVariance() {
 
       unsigned long start_time = millis();
 
       // 5 sensors, 10 samples each
       int num_samples = 10;
-      float samples[5][ num_samples ];
+
+      float samples[5][num_samples];
       float sum[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
       float mean[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
 
       // Collect samples
-      for ( int sample = 0; sample < num_samples; sample++ ) {
+      for (int sample = 0; sample < num_samples; sample++) {
 
         getCalibrated();
 
         // Copy for each sensor into samples array
-        for ( int sensor = 0; sensor < 5; sensor++ ) {
+        for (int sensor = 0; sensor < 5; sensor++) {
         
-          samples[ sensor ][ sample ] = calibrated[ sensor ];
+          samples[sensor][sample] = calibrated[sensor];
 
           // Might as well capture sum whilst were here
-          sum[ sensor ] += calibrated[ sensor ];
+          sum[sensor] += calibrated[sensor];
         
         }
 
       }
 
       // Calculate means
-      for( int sensor = 0; sensor < 5; sensor++ ) {
+      for (int sensor = 0; sensor < 5; sensor++) {
+        
         mean[sensor] = sum[sensor] / (float)num_samples;
+      
       }
       
  
-      for( int sensor = 0; sensor < 5; sensor++ ) {
+      for (int sensor = 0; sensor < 5; sensor++) {
           
-          variance[ sensor ] = 0.0;
+        variance[sensor] = 0.0;
 
-          for( int sample = 0; sample < num_samples; sample++ ) {
-            variance[sensor] += pow( samples[sensor][sample] - mean[sensor], 2);
-          }
+        for (int sample = 0; sample < num_samples; sample++) {
+
+          variance[sensor] += pow(samples[sensor][sample] - mean[sensor], 2);
         
-          variance[sensor] /= (float)num_samples;
+        }
+      
+        variance[sensor] /= (float)num_samples;
 
       }
 
@@ -220,4 +281,3 @@ class AnalogLineSensors_c {
 };
 
 #endif
-
