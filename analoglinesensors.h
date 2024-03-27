@@ -45,6 +45,7 @@ class AnalogLineSensors_c {
     }
 
     void calibrate() {
+      
       int min_values[5];
       int max_values[5];
 
@@ -55,9 +56,11 @@ class AnalogLineSensors_c {
       }
 
       int count = 0;
+      
       while ( count < 50 ) { // repeat 50 times
 
         readAllSensors();
+        
         for ( int i = 0; i < 5; i++ ) {
           if ( sensorReadings[i] > max_values[i] ) max_values[i] = sensorReadings[i];
           if ( sensorReadings[i] < min_values[i] ) min_values[i] = sensorReadings[i];
@@ -67,10 +70,12 @@ class AnalogLineSensors_c {
         delay(10);
 
         count++;
+        
       }
 
       // Determine calibration values
       for ( int i = 0; i < 5; i++ ) {
+        
         offset[i] = (float)min_values[i];
 
         // Being cautious with type conversion (int to float)
@@ -79,14 +84,17 @@ class AnalogLineSensors_c {
         temp -= (float)min_values[i]; // subtract min, gives range.
         temp = 1.0 / temp;            // 1 over creates a scaling factor
         scale[i] = temp;
+      
       }
 
       // Done
+    
     }
 
     // You can call this to get calibrated sensor readings
     // during the operation of the robot.
     void getCalibrated() {
+      
       readAllSensors();
 
       for ( int i = 0; i < 5; i++ ) {
@@ -99,27 +107,38 @@ class AnalogLineSensors_c {
 
     // Paul: helpful
     void printCalibrated() {
+      
       for ( int i = 0; i < 5; i++ ) {
         Serial.print( calibrated[i] );
         Serial.print(",");
       }
+      
       Serial.print("\n");
+      
     }
+    
     // Paul: helpful
     void printVariance() {
+      
       for ( int i = 0; i < 5; i++ ) {
         Serial.print( variance[i], 6 ); // ,6 = print 6 decimal places
         Serial.print(",");
       }
+    
       Serial.print("\n");
+    
     }
+
     // Paul: helpful
     void printReadings() {
+      
       for ( int i = 0; i < 5; i++ ) {
         Serial.print( sensorReadings[i] );
         Serial.print(",");
       }
+      
       Serial.print("\n");
+    
     }
 
     void readAllSensors() {
@@ -136,74 +155,13 @@ class AnalogLineSensors_c {
 
           sensorReadings[sensor_num] = (int)analogRead(ls_pins[sensor_num]);
 
-          // Paul: I don't think we want a delay here
-          //delay(200);
-
         }
-
-        // Paul: commenting out your old debugging statements
-        // reports results for set of readings
-        //        Serial.print("[");
-        //        Serial.print(i); // greyscale index (adjust if needed)
-        //
-        //        for (int sensor_num = 0; sensor_num < 5; sensor_num++) {
-        //
-        //          Serial.print(", ");
-        //          Serial.print(sensorReadings[sensor_num]);
-        //
-        //        }
-        //
-        //        Serial.println("]");
 
       }
 
-      // Paul: commenting out, going to apply a calibration
-      //       recorded at initialisation
-      //
-      // Normalize and calculate variance for each sensor
-      //      for (int sensor_num = 0; sensor_num < 5; sensor_num++) {
-      //
-      //        normalizeReadings(sensorReadings, MAX_SAMPLES);
-      //
-      //        float variance = calculateVariance(sensorReadings, MAX_SAMPLES);
-      //
-      //        Serial.print("Variance for sensor ");
-      //        Serial.print(sensor_num);
-      //        Serial.print(": ");
-      //        Serial.println(variance);
-      //
-      //      }
-
     }
 
-    // Normalize a set of readings to be between 0 and 1
-    //    void normalizeReadings(int readings[], int numReadings) {
-    //
-    //      int minVal = readings[0];
-    //      int maxVal = readings[0];
-    //
-    //      // Find the min and max values
-    //      for (int i = 1; i < numReadings; i++) {
-    //
-    //        if (readings[i] < minVal) {
-    //          minVal = readings[i];
-    //        }
-    //
-    //        if (readings[i] > maxVal) {
-    //          maxVal = readings[i];
-    //        }
-    //
-    //      }
-    //
-    //      // Normalize the readings
-    //      for (int i = 0; i < numReadings; i++) {
-    //        readings[i] = (float)(readings[i] - minVal) / (maxVal - minVal);
-    //      }
-    //
-    //    }
-
     // Calculate the variance of a set of normalized readings
-       // Calculate the variance of a set of normalized readings
     // Paul: I think we can save a bit of memory by collecting
     //       our samples within this function.
     float calculateVariance( ) {
@@ -213,10 +171,8 @@ class AnalogLineSensors_c {
       // 5 sensors, 10 samples each
       int num_samples = 10;
       float samples[5][ num_samples ];
-
       float sum[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
       float mean[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
-
 
       // Collect samples
       for ( int sample = 0; sample < num_samples; sample++ ) {
@@ -225,10 +181,12 @@ class AnalogLineSensors_c {
 
         // Copy for each sensor into samples array
         for ( int sensor = 0; sensor < 5; sensor++ ) {
+        
           samples[ sensor ][ sample ] = calibrated[ sensor ];
 
           // Might as well capture sum whilst were here
           sum[ sensor ] += calibrated[ sensor ];
+        
         }
 
       }
@@ -246,6 +204,7 @@ class AnalogLineSensors_c {
           for( int sample = 0; sample < num_samples; sample++ ) {
             variance[sensor] += pow( samples[sensor][sample] - mean[sensor], 2);
           }
+        
           variance[sensor] /= (float)num_samples;
 
       }
@@ -262,7 +221,4 @@ class AnalogLineSensors_c {
 };
 
 #endif
-
-#endif
-
 
