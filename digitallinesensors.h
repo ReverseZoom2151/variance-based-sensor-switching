@@ -12,8 +12,7 @@ class DigitalLineSensors_c {
 
   private:
 
-    int ls_pins[5] = { LS_LEFT_PIN, LS_MIDLEFT_PIN, LS_MIDDLE_PIN, LS_MIDRIGHT_PIN, LS_RIGHT_PIN }; // stores pin numbers for convenient access
-
+    int ls_pins[5] = {LS_LEFT_PIN, LS_MIDLEFT_PIN, LS_MIDDLE_PIN, LS_MIDRIGHT_PIN, LS_RIGHT_PIN}; // stores pin numbers for convenient access
     int sensorReadings[5]; // array to store readings
 
     // Paul: variables to store calibration values
@@ -24,26 +23,58 @@ class DigitalLineSensors_c {
 
   public:
 
-    // to store normalised readings later.
-    float calibrated[5];
-
-    // variance for each sensor
-    float variance[5];
+    float calibrated[5]; // to store normalised readings later.
+    float variance[5]; // variance for each sensor
 
     DigitalLineSensors_c() {}
+
+    // reads a line sensor with error checking
+    unsigned long readLineSensor(int number) {
+
+      // prevents memory errors
+      if (number < 0 || number > 4) {
+
+        Serial.println("Error: sensor number out of range");
+        return -1; // or some other clear error indication
+
+      }
+
+      pinMode(EMIT_PIN, OUTPUT);
+      digitalWrite(EMIT_PIN, HIGH);
+
+      pinMode(ls_pins[number], OUTPUT);
+      digitalWrite(ls_pins[number], HIGH);
+
+      delayMicroseconds(10);
+
+      pinMode(ls_pins[number], INPUT); // only switches to input for measurement
+
+      unsigned long start_time = micros();
+
+      while (digitalRead(ls_pins[number]) == HIGH) {}
+
+      unsigned long end_time = micros();
+
+      pinMode(EMIT_PIN, INPUT);
+
+      unsigned long elapsed_time = end_time - start_time;
+
+      return elapsed_time;
+
+    }
 
     // Paul: reads all line sensors in a single function
     void readAllSensors() {
 
       // Turn on IR LED
-      pinMode( EMIT_PIN, OUTPUT );
-      digitalWrite( EMIT_PIN, HIGH );
+      pinMode(EMIT_PIN, OUTPUT);
+      digitalWrite(EMIT_PIN, HIGH);
 
       // Charge capacitors
-      for ( int i = 0; i < 5; i++ ) {
+      for (int i = 0; i < 5; i++) {
         
-        pinMode( ls_pins[i], OUTPUT );
-        digitalWrite( ls_pins[i], HIGH );
+        pinMode(ls_pins[i], OUTPUT);
+        digitalWrite(ls_pins[i], HIGH);
 
         // Let's initialise sensor readings to a
         // known value too.
@@ -54,24 +85,26 @@ class DigitalLineSensors_c {
       delayMicroseconds(10);
 
       // Set all sensor pins back to input
-      for ( int i = 0; i < 5; i++ ) {
-        pinMode( ls_pins[i], INPUT );
+      for (int i = 0; i < 5; i++) {
+
+        pinMode(ls_pins[i], INPUT);
+      
       }
 
       // Now to read...
       int remaining = 5;
       unsigned long start_time = micros();
       
-      while ( remaining > 0 ) { // still have sensors to complete?
+      while (remaining > 0) { // still have sensors to complete?
 
         // check each sensor
-        for ( int i = 0; i < 5; i++ ) {
+        for (int i = 0; i < 5; i++) {
 
           // Still has initial value? hasn't completed yet.
-          if ( sensorReadings[ i ] == 0 ) {
+          if (sensorReadings[i] == 0) {
 
             // If low, now we record time elapsed
-            if ( digitalRead( ls_pins[i] ) == LOW ) {
+            if (digitalRead(ls_pins[i]) == LOW) {
               
               unsigned long dt =  micros() - start_time;
               sensorReadings[i] = (int)dt;
@@ -97,20 +130,33 @@ class DigitalLineSensors_c {
       float max_values[5];
 
       // Initialise
-      for ( int i = 0; i < 5; i++ ) {
+      for (int i = 0; i < 5; i++) {
+        
         min_values[i] = 9999.9;
         max_values[i] = -9999.9;
+      
       }
 
       int count = 0;
       
-      while ( count < 50 ) { // repeat 50 times
+      while (count < 50) { // repeat 50 times
 
         readAllSensors();
         
-        for ( int i = 0; i < 5; i++ ) {
-          if ( sensorReadings[i] > max_values[i] ) max_values[i] = sensorReadings[i];
-          if ( sensorReadings[i] < min_values[i] ) min_values[i] = sensorReadings[i];
+        for (int i = 0; i < 5; i++) {
+          
+          if (sensorReadings[i] > max_values[i]) {
+            
+            max_values[i] = sensorReadings[i];
+
+          }
+          
+          if (sensorReadings[i] < min_values[i]) {
+            
+            min_values[i] = sensorReadings[i];
+
+          }     
+        
         }
 
         // 10ms * 50 = 1/2 seconds (500ms) to capture min/max
@@ -121,7 +167,7 @@ class DigitalLineSensors_c {
       }
 
       // Determine calibration values
-      for ( int i = 0; i < 5; i++ ) {
+      for (int i = 0; i < 5; i++) {
         
         offset[i] = min_values[i];
 
@@ -146,7 +192,7 @@ class DigitalLineSensors_c {
       
       readAllSensors();
 
-      for ( int i = 0; i < 5; i++ ) {
+      for (int i = 0; i < 5; i++) {
       
         calibrated[i] = (float)sensorReadings[i];
         calibrated[i] -= offset[i];
@@ -159,9 +205,11 @@ class DigitalLineSensors_c {
     // Paul: helpful
     void printCalibrated() {
       
-      for ( int i = 0; i < 5; i++ ) {
-        Serial.print( calibrated[i] );
+      for (int i = 0; i < 5; i++) {
+
+        Serial.print(calibrated[i]);
         Serial.print(",");
+      
       }
       
       Serial.print("\n");
@@ -171,9 +219,11 @@ class DigitalLineSensors_c {
     // Paul: helpful
     void printVariance() {
       
-      for ( int i = 0; i < 5; i++ ) {
-        Serial.print( variance[i], 6 ); // ,6 = print 6 decimal places
+      for (int i = 0; i < 5; i++) {
+
+        Serial.print(variance[i], 6); // ,6 = print 6 decimal places
         Serial.print(",");
+      
       }
       
       Serial.print("\n");
@@ -183,95 +233,66 @@ class DigitalLineSensors_c {
     // Paul: helpful
     void printReadings() {
       
-      for ( int i = 0; i < 5; i++ ) {
-        Serial.print( sensorReadings[i] );
+      for (int i = 0; i < 5; i++) {
+
+        Serial.print(sensorReadings[i]);
         Serial.print(",");
+
       }
       
       Serial.print("\n");
     
     }
 
-    // reads a line sensor with error checking
-    unsigned long readLineSensor(int number) {
-
-      // prevents memory errors
-      if (number < 0 || number > 4) {
-
-        Serial.println("Error: sensor number out of range");
-        return -1; // or some other clear error indication
-
-      }
-
-      pinMode(EMIT_PIN, OUTPUT);
-      digitalWrite(EMIT_PIN, HIGH);
-      pinMode(ls_pins[number], OUTPUT);
-      digitalWrite(ls_pins[number], HIGH);
-      delayMicroseconds(10);
-
-      pinMode(ls_pins[number], INPUT); // only switches to input for measurement
-
-      unsigned long start_time = micros();
-
-      while (digitalRead(ls_pins[number]) == HIGH) {}
-
-      unsigned long end_time = micros();
-
-      pinMode(EMIT_PIN, INPUT);
-
-      unsigned long elapsed_time = end_time - start_time;
-
-      return elapsed_time;
-
-    }
-
     // Calculate the variance of a set of normalized readings
     // Paul: I think we can save a bit of memory by collecting
     //       our samples within this function.
-    float calculateVariance( ) {
+    float calculateVariance() {
 
       unsigned long start_time = millis();
 
       // 5 sensors, 10 samples each
       int num_samples = 10;
-      float samples[5][ num_samples ];
-
+      float samples[5][num_samples];
       float sum[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
       float mean[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
 
-
       // Collect samples
-      for ( int sample = 0; sample < num_samples; sample++ ) {
+      for (int sample = 0; sample < num_samples; sample++) {
 
         getCalibrated();
 
         // Copy for each sensor into samples array
-        for ( int sensor = 0; sensor < 5; sensor++ ) {
+        for (int sensor = 0; sensor < 5; sensor++) {
           
-          samples[ sensor ][ sample ] = calibrated[ sensor ];
+          samples[sensor][sample] = calibrated[sensor];
 
           // Might as well capture sum whilst were here
-          sum[ sensor ] += calibrated[ sensor ];
+          sum[sensor] += calibrated[sensor];
           
         }
 
       }
 
       // Calculate means
-      for( int sensor = 0; sensor < 5; sensor++ ) {
+      for (int sensor = 0; sensor < 5; sensor++) {
+
         mean[sensor] = sum[sensor] / (float)num_samples;
+
       }
       
  
-      for( int sensor = 0; sensor < 5; sensor++ ) {
+      for (int sensor = 0; sensor < 5; sensor++) {
           
-          variance[ sensor ] = 0.0;
+        variance[sensor] = 0.0;
 
-          for( int sample = 0; sample < num_samples; sample++ ) {
-            variance[sensor] += pow( samples[sensor][sample] - mean[sensor], 2);
-          }
+        for (int sample = 0; sample < num_samples; sample++) {
+
+          variance[sensor] += pow(samples[sensor][sample] - mean[sensor], 2);
         
-          variance[sensor] /= (float)num_samples;
+        }
+      
+        variance[sensor] /= (float)num_samples;
 
       }
 
@@ -287,4 +308,3 @@ class DigitalLineSensors_c {
 };
 
 #endif
-
