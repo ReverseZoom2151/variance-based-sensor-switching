@@ -1,10 +1,7 @@
 #ifndef DIGITALLINESENSORS_H
 #define DIGITALLINESENSORS_H
-
 #define MAX_SAMPLES 10
-
 #define EMIT_PIN    11
-
 #define LS_LEFT_PIN 12
 #define LS_MIDLEFT_PIN A0
 #define LS_MIDDLE_PIN A2
