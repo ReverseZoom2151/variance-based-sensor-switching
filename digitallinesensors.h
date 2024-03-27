@@ -61,6 +61,7 @@ class DigitalLineSensors_c {
       // Now to read...
       int remaining = 5;
       unsigned long start_time = micros();
+      
       while ( remaining > 0 ) { // still have sensors to complete?
 
         // check each sensor
