@@ -60,21 +60,21 @@ void setup() {
   //        one after the other, seems to work :)
   //        You can uncomment each set to see what it is
   //        doing.
-  //while ( true ) {
+  // while ( true ) {
 
-  //a_sensors.getCalibrated();
-  //a_sensors.printCalibrated();
+  // a_sensors.getCalibrated();
+  // a_sensors.printCalibrated();
 
-  //a_sensors.calculateVariance();
-  //a_sensors.printVariance();
+  // a_sensors.calculateVariance();
+  // a_sensors.printVariance();
 
-  //d_sensors.getCalibrated();
+  // d_sensors.getCalibrated();
   // d_sensors.printCalibrated();
 
-  //d_sensors.calculateVariance();
-  //d_sensors.printVariance();
+  // d_sensors.calculateVariance();
+  // d_sensors.printVariance();
 
-  //}
+  // }
 
   // Prepare to start.
   update_ts = millis();
