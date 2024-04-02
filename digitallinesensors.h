@@ -159,7 +159,7 @@ class DigitalLineSensors_c {
         
         }
 
-        // 10ms * 50 = 1/2 seconds (500ms) to capture min/max
+        // 10ms * 50 = 0.5 seconds (500ms) to capture min/max
         delay(10);
 
         count++;
@@ -210,34 +210,6 @@ class DigitalLineSensors_c {
         Serial.print(calibrated[i]);
         Serial.print(",");
       
-      }
-      
-      Serial.print("\n");
-    
-    }
-
-    // Paul: helpful
-    void printVariance() {
-      
-      for (int i = 0; i < 5; i++) {
-
-        Serial.print(variance[i], 6); // ,6 = print 6 decimal places
-        Serial.print(",");
-      
-      }
-      
-      Serial.print("\n");
-    
-    }
-
-    // Paul: helpful
-    void printReadings() {
-      
-      for (int i = 0; i < 5; i++) {
-
-        Serial.print(sensorReadings[i]);
-        Serial.print(",");
-
       }
       
       Serial.print("\n");
@@ -302,6 +274,34 @@ class DigitalLineSensors_c {
       //       the surface tone, which is interesting.
       //Serial.print("Digital Variance calculation took: ");
       //Serial.println( (int)( end_time - start_time ) );
+    
+    }
+
+    // Paul: helpful
+    void printVariance() {
+      
+      for (int i = 0; i < 5; i++) {
+
+        Serial.print(variance[i], 6); // (, 6) = print 6 decimal places
+        Serial.print(",");
+      
+      }
+      
+      Serial.print("\n");
+    
+    }
+
+    // Paul: helpful
+    void printReadings() {
+      
+      for (int i = 0; i < 5; i++) {
+
+        Serial.print(sensorReadings[i]);
+        Serial.print(",");
+
+      }
+      
+      Serial.print("\n");
     
     }
 
