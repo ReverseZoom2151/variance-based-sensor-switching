@@ -6,8 +6,8 @@
 #define STATE_RUNNING_TRIAL 0
 #define STATE_PRINT_RESULTS 1
 #define SENSOR_THRESHOLD
-#define ANALOG_SENSOR_THRESHOLD
-#define DIGITAL_SENSOR_THRESHOLD
+#define ANALOG_THRESHOLD 0.5
+#define DIGITAL_THRESHOLD 0.619
 
 AnalogLineSensors_c a_sensors;
 DigitalLineSensors_c d_sensors;
@@ -32,7 +32,7 @@ bool digitalLineDetected() {
   unsigned long digitalRightSensorReading = d_sensors.calibrated[3]; // DN4
 
   // reads all three line sensors through the digital method and determines if any sensor detects the line
-  return ((digitalLeftSensorReading >= SENSOR_THRESHOLD) || (digitalMiddleSensorReading >= SENSOR_THRESHOLD) || (digitalRightSensorReading >= SENSOR_THRESHOLD));
+  return ((digitalLeftSensorReading >= DIGITAL_THRESHOLD) || (digitalMiddleSensorReading >= DIGITAL_THRESHOLD) || (digitalRightSensorReading >= DIGITAL_THRESHOLD));
 
 }
 
@@ -45,7 +45,7 @@ bool analogLineDetected() {
   unsigned long analogRightSensorReading = a_sensors.calibrated[3]; // DN4
 
   // reads all three line sensors through the analog method and determines if any sensor detects the line
-  return ((analogLeftSensorReading >= SENSOR_THRESHOLD) || (analogMiddleSensorReading >= SENSOR_THRESHOLD) || (analogRightSensorReading >= SENSOR_THRESHOLD));
+  return ((analogLeftSensorReading >= ANALOG_THRESHOLD) || (analogMiddleSensorReading >= ANALOG_THRESHOLD) || (analogRightSensorReading >= ANALOG_THRESHOLD));
 
 }
 
@@ -113,12 +113,12 @@ void analogFollowLine() {
   
   }
   
-  if (analogFarLeftSensorReading >= SENSOR_THRESHOLD && analogLineDetected()) {
+  if (analogFarLeftSensorReading >= ANALOG_THRESHOLD) {
 
     // executes a sharp left turn for corners (90 degrees)
     motors.spinLeft(BiasPWM, 250);
   
-  } else if (analogFarRightSensorReading >= SENSOR_THRESHOLD && analogLineDetected()) {
+  } else if (analogFarRightSensorReading >= ANALOG_THRESHOLD) {
 
     // executes a sharp left turn for corners (90 degrees)
     motors.spinRight(BiasPWM, 250);
@@ -147,12 +147,12 @@ void digitalFollowLine() {
   
   }
 
-  if (digitalFarLeftSensorReading >= SENSOR_THRESHOLD && digitalLineDetected()) {
+  if (digitalFarLeftSensorReading >= DIGITAL_THRESHOLD) {
 
     // executes a sharp left turn for corners (90 degrees)
     motors.spinLeft(BiasPWM, 250);
   
-  } else if (digitalFarRightSensorReading >= SENSOR_THRESHOLD && digitalLineDetected()) {
+  } else if (digitalFarRightSensorReading >= DIGITAL_THRESHOLD) {
 
     // executes a sharp left turn for corners (90 degrees)
     motors.spinRight(BiasPWM, 250);
@@ -176,7 +176,7 @@ void setup() {
   // Place the robot so the sensors will sweep over
   // black and white surfaces.
   motors.setMotorsPWM(-80, 80); // start spinning
-  // a_sensors.calibrate();
+  a_sensors.calibrate();
   // d_sensors.calibrate();
 
   // Stop spinning!
@@ -232,14 +232,13 @@ void loop() {
       update_ts = millis();
 
       // Some behaviour code here:
-      // analogFollowLine();
+      analogFollowLine();
       // digitalFollowLine();
 
       if (results_index < MAX_RESULTS) {
 
         // Just as an example.
-        // This could be any other variable from your
-        // system.
+        // This could be any other variable from your system.
         results[results_index] = (float)millis();
 
         // increment for next time.
@@ -248,16 +247,16 @@ void loop() {
       } else {
         
         // filled up results array? experiment over.
-        state = STATE_PRINT_RESULTS;
+        // state = STATE_PRINT_RESULTS;
 
         // Might as well stop the robot
-        motors.setMotorsPWM(0, 0);
+        // motors.setMotorsPWM(0, 0);
 
-        // Beep to signal end
-        pinMode(6, OUTPUT);
-        analogWrite(6, 120);
-        delay(5);
-        analogWrite(6, 0);
+        // // Beep to signal end
+        // pinMode(6, OUTPUT);
+        // analogWrite(6, 120);
+        // delay(5);
+        // analogWrite(6, 0); 
 
       }
 
