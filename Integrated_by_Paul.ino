@@ -5,6 +5,9 @@
 #define MAX_RESULTS 100
 #define STATE_RUNNING_TRIAL 0
 #define STATE_PRINT_RESULTS 1
+#define SENSOR_THRESHOLD
+#define ANALOG_SENSOR_THRESHOLD
+#define DIGITAL_SENSOR_THRESHOLD
 
 AnalogLineSensors_c a_sensors;
 DigitalLineSensors_c d_sensors;
@@ -22,9 +25,11 @@ const float MaxTurnPWM = 20.0;
 
 bool digitalLineDetected() {
 
-  unsigned long digitalLeftSensorReading = d_sensors.readLineSensor(1); // DN2
-  unsigned long digitalMiddleSensorReading = d_sensors.readLineSensor(2); // DN3
-  unsigned long digitalRightSensorReading = d_sensors.readLineSensor(3); // DN4
+  d_sensors.getCalibrated();
+
+  unsigned long digitalLeftSensorReading = d_sensors.calibrated[1]; // DN2
+  unsigned long digitalMiddleSensorReading = d_sensors.calibrated[2]; // DN3
+  unsigned long digitalRightSensorReading = d_sensors.calibrated[3]; // DN4
 
   // reads all three line sensors through the digital method and determines if any sensor detects the line
   return ((digitalLeftSensorReading >= SENSOR_THRESHOLD) || (digitalMiddleSensorReading >= SENSOR_THRESHOLD) || (digitalRightSensorReading >= SENSOR_THRESHOLD));
@@ -33,9 +38,11 @@ bool digitalLineDetected() {
 
 bool analogLineDetected() {
 
-  unsigned long analogLeftSensorReading = a_sensors.readLineSensor(1); // DN2
-  unsigned long analogMiddleSensorReading = a_sensors.readLineSensor(2); // DN3
-  unsigned long analogRightSensorReading = a_sensors.readLineSensor(3); // DN4
+  a_sensors.getCalibrated(); 
+
+  unsigned long analogLeftSensorReading = a_sensors.calibrated[1]; // DN2
+  unsigned long analogMiddleSensorReading = a_sensors.calibrated[2]; // DN3
+  unsigned long analogRightSensorReading = a_sensors.calibrated[3]; // DN4
 
   // reads all three line sensors through the analog method and determines if any sensor detects the line
   return ((analogLeftSensorReading >= SENSOR_THRESHOLD) || (analogMiddleSensorReading >= SENSOR_THRESHOLD) || (analogRightSensorReading >= SENSOR_THRESHOLD));
@@ -44,8 +51,10 @@ bool analogLineDetected() {
 
 float analogWeightedMeasurement() {
 
-  unsigned long analogLeftSensorReading = a_sensors.readLineSensor(1); // DN2
-  unsigned long analogRightSensorReading = a_sensors.readLineSensor(3); // DN4
+  a_sensors.getCalibrated(); 
+
+  unsigned long analogLeftSensorReading = a_sensors.calibrated[1]; // DN2
+  unsigned long analogRightSensorReading = a_sensors.calibrated[3]; // DN4
   unsigned long sum = analogLeftSensorReading + analogRightSensorReading;
 
   float analogLeftNormalized = (float)analogLeftSensorReading / sum;
@@ -64,8 +73,10 @@ float analogWeightedMeasurement() {
 
 float digitalWeightedMeasurement() {
 
-  unsigned long digitalLeftSensorReading = d_sensors.readLineSensor(1); // DN2
-  unsigned long digitalRightSensorReading = d_sensors.readLineSensor(3); // DN4
+  d_sensors.getCalibrated(); 
+
+  unsigned long digitalLeftSensorReading = d_sensors.calibrated[1]; // DN2
+  unsigned long digitalRightSensorReading = d_sensors.calibrated[3]; // DN4
   unsigned long sum = digitalLeftSensorReading + digitalRightSensorReading;
 
   float digitalLeftNormalized = (float)digitalLeftSensorReading / sum;
@@ -84,11 +95,13 @@ float digitalWeightedMeasurement() {
 
 void analogFollowLine() {
 
-  unsigned long analogFarLeftSensorReading = a_sensors.readLineSensor(0); // DN1
-  unsigned long analogLeftSensorReading = a_sensors.readLineSensor(1); // DN2
-  unsigned long analogMiddleSensorReading = a_sensors.readLineSensor(2); // DN3
-  unsigned long analogRightSensorReading = a_sensors.readLineSensor(3); // DN4
-  unsigned long analogFarRightSensorReading = a_sensors.readLineSensor(4); // DN5
+  a_sensors.getCalibrated(); 
+
+  unsigned long analogFarLeftSensorReading = a_sensors.calibrated[0]; // DN1
+  unsigned long analogLeftSensorReading = a_sensors.calibrated[1]; // DN2
+  unsigned long analogMiddleSensorReading = a_sensors.calibrated[2]; // DN3
+  unsigned long analogRightSensorReading = a_sensors.calibrated[3]; // DN4
+  unsigned long analogFarRightSensorReading = a_sensors.calibrated[4]; // DN5
 
   if (analogLineDetected()) { 
 
@@ -99,7 +112,6 @@ void analogFollowLine() {
     motors.setMotorsPWM(LeftPWM, RightPWM);  
   
   }
-
   
   if (analogFarLeftSensorReading >= SENSOR_THRESHOLD && analogLineDetected()) {
 
@@ -117,11 +129,13 @@ void analogFollowLine() {
 
 void digitalFollowLine() {
 
-  unsigned long digitalFarLeftSensorReading = d_sensors.readLineSensor(0); // DN1
-  unsigned long digitalLeftSensorReading = d_sensors.readLineSensor(1); // DN2
-  unsigned long digitalMiddleSensorReading = d_sensors.readLineSensor(2); // DN3
-  unsigned long digitalRightSensorReading = d_sensors.readLineSensor(3); // DN4
-  unsigned long digitalFarRightSensorReading = d_sensors.readLineSensor(4); // DN5
+  d_sensors.getCalibrated(); 
+
+  unsigned long digitalFarLeftSensorReading = d_sensors.calibrated[0]; // DN1
+  unsigned long digitalLeftSensorReading = d_sensors.calibrated[1]; // DN2
+  unsigned long digitalMiddleSensorReading = d_sensors.calibrated[2]; // DN3
+  unsigned long digitalRightSensorReading = d_sensors.calibrated[3]; // DN4
+  unsigned long digitalFarRightSensorReading = d_sensors.calibrated[4]; // DN5
 
   if (digitalLineDetected()) { 
 
@@ -155,19 +169,18 @@ void setup() {
   delay(2000);
   Serial.println("***RESET***");
 
-
   // To calibrate, we set the robot spinning on the spot
   // briefly, and call the calibration routine.
   // calibrate() is blocking, so it will take the time it
   // needs.
   // Place the robot so the sensors will sweep over
   // black and white surfaces.
-  motors.setMotorsPWM( -80, 80 ); // start spinning
-  a_sensors.calibrate();
-  d_sensors.calibrate();
+  motors.setMotorsPWM(-80, 80); // start spinning
+  // a_sensors.calibrate();
+  // d_sensors.calibrate();
 
   // Stop spinning!
-  motors.setMotorsPWM( 0, 0 );
+  motors.setMotorsPWM(0, 0);
 
   // Some beeping + delay so you can move it to the start location
   int count = 0;
@@ -188,19 +201,17 @@ void setup() {
   //        one after the other, seems to work :)
   //        You can uncomment each set to see what it is
   //        doing.
-  // while ( true ) {
+  // while (true) {
 
-  // a_sensors.getCalibrated();
-  // a_sensors.printCalibrated();
+    // a_sensors.getCalibrated();
+    // a_sensors.printCalibrated();
+    // a_sensors.calculateVariance();
+    // a_sensors.printVariance();
 
-  // a_sensors.calculateVariance();
-  // a_sensors.printVariance();
-
-  // d_sensors.getCalibrated();
-  // d_sensors.printCalibrated();
-
-  // d_sensors.calculateVariance();
-  // d_sensors.printVariance();
+    // d_sensors.getCalibrated();
+    // d_sensors.printCalibrated();
+    // d_sensors.calculateVariance();
+    // d_sensors.printVariance();
 
   // }
 
@@ -221,10 +232,8 @@ void loop() {
       update_ts = millis();
 
       // Some behaviour code here:
-      digitalFollowLine();
-      analogFollowLine();
-      d_sensors.getCalibrated();
-      a_sensors.getCalibrated();
+      // analogFollowLine();
+      // digitalFollowLine();
 
       if (results_index < MAX_RESULTS) {
 
@@ -258,6 +267,7 @@ void loop() {
 
     // Just print the results, and give a delay so
     // you have time to copy-paste
+
     for (int i = 0; i < MAX_RESULTS; i++) {
 
       Serial.print(results[i]);
