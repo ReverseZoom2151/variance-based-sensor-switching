@@ -133,7 +133,7 @@ class AnalogLineSensors_c {
 
         }
 
-        // 10ms * 50 = 0.5 second to capture min/max
+        // 10ms * 50 = 0.5 seconds to capture min/max
         delay(10);
 
         count++;
@@ -149,7 +149,7 @@ class AnalogLineSensors_c {
         float temp;
         temp = max_values[i];  // Get max
         temp -= min_values[i]; // subtract min, gives range.
-        temp = 1.0 / temp;            // 1 over creates a scaling factor
+        temp = 1.0 / temp;     // 1 over creates a scaling factor
         scale[i] = temp;
       
       }
@@ -186,34 +186,6 @@ class AnalogLineSensors_c {
       
       Serial.print("\n");
       
-    }
-    
-    // Paul: helpful
-    void printVariance() {
-      
-      for (int i = 0; i < 5; i++) {
-
-        Serial.print(variance[i], 6); // ,6 = print 6 decimal places
-        Serial.print(",");
-
-      }
-    
-      Serial.print("\n");
-    
-    }
-
-    // Paul: helpful
-    void printReadings() {
-      
-      for (int i = 0; i < 5; i++) {
-
-        Serial.print(sensorReadings[i]);
-        Serial.print(",");
-      
-      }
-      
-      Serial.print("\n");
-    
     }
 
     // Calculate the variance of a set of normalized readings
@@ -275,6 +247,34 @@ class AnalogLineSensors_c {
       //       consistent, which is surprising
       //Serial.print("Analogue Variance calculation took: ");
       //Serial.println( (int)( end_time - start_time ) );
+    
+    }
+    
+    // Paul: helpful
+    void printVariance() {
+      
+      for (int i = 0; i < 5; i++) {
+
+        Serial.print(variance[i], 6); // (, 6) = print 6 decimal places
+        Serial.print(",");
+
+      }
+    
+      Serial.print("\n");
+    
+    }
+
+    // Paul: helpful
+    void printReadings() {
+      
+      for (int i = 0; i < 5; i++) {
+
+        Serial.print(sensorReadings[i]);
+        Serial.print(",");
+      
+      }
+      
+      Serial.print("\n");
     
     }
 
