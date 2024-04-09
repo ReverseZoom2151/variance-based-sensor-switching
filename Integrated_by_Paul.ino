@@ -231,9 +231,28 @@ void loop() {
       
       update_ts = millis();
 
-      // Some behaviour code here:
-      analogFollowLine();
-      // digitalFollowLine();
+      a_sensors.getCalibrated();
+      d_sensors.getCalibrated();
+
+      // Serial.print("Digital:");
+      // d_sensors.printCalibrated();
+      // a_sensors.calculateVariance();
+      // d_sensors.calculateVariance();
+      analogVariance = a_sensors.calculateAverageVariance();
+      digitalVariance = d_sensors.calculateAverageVariance();
+      // // Serial.print("analogVariance:");
+      // // a_sensors.printVariance();
+      // // Serial.print("DigitalVariance:");
+      // // d_sensors.printVariance();
+
+      if (analogVariance < digitalVariance) {
+        analogFollowLine();
+      } else {
+        digitalFollowLine();
+        }
+      // analogFollowLine();
+      //digitalFollowLine();
+
 
       if (results_index < MAX_RESULTS) {
 
