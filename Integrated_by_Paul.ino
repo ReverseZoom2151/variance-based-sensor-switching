@@ -24,40 +24,6 @@ int state;
 const float BiasPWM = 30.0; // starts with a positive forward bias
 const float MaxTurnPWM = 20.0;
 
-
-// Paul: I think you no longer need this function.
-//       But if you do use it, watch out for the bug
-//       about using unsigned long.
-bool digitalLineDetected() {
-
-  d_sensors.getCalibrated();
-
-  unsigned long digitalLeftSensorReading = d_sensors.calibrated[1]; // DN2
-  unsigned long digitalMiddleSensorReading = d_sensors.calibrated[2]; // DN3
-  unsigned long digitalRightSensorReading = d_sensors.calibrated[3]; // DN4
-
-  // reads all three line sensors through the digital method and determines if any sensor detects the line
-  return ((digitalLeftSensorReading >= DIGITAL_THRESHOLD) || (digitalMiddleSensorReading >= DIGITAL_THRESHOLD) || (digitalRightSensorReading >= DIGITAL_THRESHOLD));
-
-}
-
-
-// Paul: I think you no longer need this function.
-//       But if you do use it, watch out for the bug
-//       about using unsigned long.
-bool analogLineDetected() {
-
-  a_sensors.getCalibrated();
-
-  unsigned long analogLeftSensorReading = a_sensors.calibrated[1]; // DN2
-  unsigned long analogMiddleSensorReading = a_sensors.calibrated[2]; // DN3
-  unsigned long analogRightSensorReading = a_sensors.calibrated[3]; // DN4
-
-  // reads all three line sensors through the analog method and determines if any sensor detects the line
-  return ((analogLeftSensorReading >= ANALOG_THRESHOLD) || (analogMiddleSensorReading >= ANALOG_THRESHOLD) || (analogRightSensorReading >= ANALOG_THRESHOLD));
-
-}
-
 float analogWeightedMeasurement() {
 
   a_sensors.getCalibrated();
@@ -126,6 +92,36 @@ void digitalFollowLine() {
 
 }
 
+void lineFollowing() {
+    // Calculate variances
+    a_sensors.getCalibrated();
+    d_sensors.getCalibrated();
+    a_sensors.calculateVariance();
+    d_sensors.calculateVariance();
+
+    // Determine the preferred measurement method 
+    float analogVariance = a_sensors.calculateAverageVariance();
+    float digitalVariance = d_sensors.calculateAverageVariance();
+
+    float W;
+    if (analogVariance < digitalVariance) {
+        // Use analog method
+        a_sensors.getCalibrated(); // Get updated calibrated values
+        W = analogWeightedMeasurement();
+    } else {
+        // Use digital method
+        d_sensors.getCalibrated(); // Get updated calibrated values
+        W = digitalWeightedMeasurement();
+    }
+
+    // Calculate motor PWM values
+    float LeftPWM = BiasPWM + (MaxTurnPWM * W);
+    float RightPWM = BiasPWM - (MaxTurnPWM * W);
+
+    // Apply motor commands
+    motors.setMotorsPWM(LeftPWM, RightPWM); 
+}
+
 void setup() {
 
   // put your setup code here, to run once:
@@ -142,7 +138,7 @@ void setup() {
   // calibrate() is blocking, so it will take the time it needs.
   // Place the robot so the sensors will sweep over black and white surfaces.
   motors.setMotorsPWM(-80, 80); // start spinning
-  a_sensors.calibrate();
+  //a_sensors.calibrate();
   d_sensors.calibrate();
 
   // Stop spinning!
@@ -170,10 +166,10 @@ void setup() {
     // Here, we still need to call getCalibrated()
     // and calculateVariance().
 
-    a_sensors.getCalibrated();
-    a_sensors.printCalibrated();
-    // a_sensors.calculateVariance();
-    // a_sensors.printVariance();
+    //a_sensors.getCalibrated();
+    //a_sensors.printCalibrated();
+    //a_sensors.calculateVariance();
+    //a_sensors.printVariance();
 
     d_sensors.getCalibrated();
     d_sensors.printCalibrated();
@@ -209,13 +205,13 @@ void setup() {
     //       want to call kinematics.update() regularly. I 
     //       recommend you call it every 20ms or something,
     //       not just every time loop() happens.
-    kinematics.update(count_e0, count_e1);
-    Serial.print(kinematics.xPos);
-    Serial.print(",");
-    Serial.print(kinematics.yPos);    
-    Serial.print(",");
-    Serial.print(kinematics.theta);
-    Serial.print("\n");
+    // kinematics.update(count_e0, count_e1);
+    // Serial.print(kinematics.xPos);
+    // Serial.print(",");
+    // Serial.print(kinematics.yPos);    
+    // Serial.print(",");
+    // Serial.print(kinematics.theta);
+    // Serial.print("\n");
 
     delay(20);
 
@@ -237,44 +233,44 @@ void loop() {
 
       update_ts = millis();
 
-      a_sensors.getCalibrated();
-      d_sensors.getCalibrated();
+      // a_sensors.getCalibrated();
+      // d_sensors.getCalibrated();
 
-      // Serial.print("Digital:");
-      // d_sensors.printCalibrated();
+      // // Serial.print("Digital:");
+      // // d_sensors.printCalibrated();
       
-      // Paul: you need to also call these
-       a_sensors.calculateVariance();
-       d_sensors.calculateVariance();
+      // // Paul: you need to also call these
+      //  a_sensors.calculateVariance();
+      //  d_sensors.calculateVariance();
       
-      float analogVariance = a_sensors.calculateAverageVariance();
-      float digitalVariance = d_sensors.calculateAverageVariance();
+      // float analogVariance = a_sensors.calculateAverageVariance();
+      // float digitalVariance = d_sensors.calculateAverageVariance();
       
-      // Serial.print("analogVariance:");
-      // a_sensors.printVariance();
-      // Serial.print("DigitalVariance:");
-      // d_sensors.printVariance();
+      // // Serial.print("analogVariance:");
+      // // a_sensors.printVariance();
+      // // Serial.print("DigitalVariance:");
+      // // d_sensors.printVariance();
 
-      // Paul: This bit needs work...
+      // // Paul: This bit needs work...
 
-            float w;
-            if (analogVariance < digitalVariance) {
+      //       float w;
+      //       if (analogVariance < digitalVariance) {
 
-              // Paul: suggested the below, but 
-              //       your original functions will work.
-              // w = analogWeightedMeasurement();
+      //         // Paul: suggested the below, but 
+      //         //       your original functions will work.
+      //         // w = analogWeightedMeasurement();
               
-              analogFollowLine();
+      //         analogFollowLine();
               
-            } else {
+      //       } else {
 
-              // Paul: suggested the below, but 
-              //       your original functions will work.
-              w = digitalWeightedMeasurement();
+      //         // Paul: suggested the below, but 
+      //         //       your original functions will work.
+      //         w = digitalWeightedMeasurement();
 
-              digitalFollowLine();
+      //         digitalFollowLine();
 
-            }
+      //       }
       
       // Paul: could call a generic line following function
       // lineFollowing(w);
