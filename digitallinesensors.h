@@ -306,14 +306,20 @@ class DigitalLineSensors_c {
     }
     
     float calculateAverageVariance() {
-      float totalVariance = 0.0;
-      calculateVariance();
-      for (int i = 0; i < 5; i++) {
-        totalVariance += variance[i];
-        }
-        return totalVariance / 5.0f; 
-  }
 
+      float totalVariance = 0.0;
+      
+      calculateVariance();
+      
+      for (int i = 0; i < 5; i++) {
+      
+        totalVariance += variance[i];
+        
+      }
+      
+      return totalVariance / 5.0f; 
+  
+    }
 
 };
 
