@@ -7,9 +7,7 @@
 #define MAX_RESULTS 100
 #define STATE_RUNNING_TRIAL 0
 #define STATE_PRINT_RESULTS 1
-#define SENSOR_THRESHOLD
-#define ANALOG_THRESHOLD 0.5
-#define DIGITAL_THRESHOLD 0.619
+
 
 AnalogLineSensors_c a_sensors;
 DigitalLineSensors_c d_sensors;
