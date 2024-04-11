@@ -138,7 +138,7 @@ void setup() {
   // calibrate() is blocking, so it will take the time it needs.
   // Place the robot so the sensors will sweep over black and white surfaces.
   motors.setMotorsPWM(-80, 80); // start spinning
-  //a_sensors.calibrate();
+  a_sensors.calibrate();
   d_sensors.calibrate();
 
   // Stop spinning!
@@ -161,61 +161,61 @@ void setup() {
   // Paul: debugging
   //       testing both analog and digital can be done one after the other, seems to work :)
   //       You can uncomment each set to see what it is doing.
-  while (true) {
+  // while (true) {
 
-    // Here, we still need to call getCalibrated()
-    // and calculateVariance().
+  //   // Here, we still need to call getCalibrated()
+  //   // and calculateVariance().
 
-    //a_sensors.getCalibrated();
-    //a_sensors.printCalibrated();
-    //a_sensors.calculateVariance();
-    //a_sensors.printVariance();
+  //   a_sensors.getCalibrated();
+  //   //a_sensors.printCalibrated();
+  //   //a_sensors.calculateVariance();
+  //   //a_sensors.printVariance();
 
-    d_sensors.getCalibrated();
-    d_sensors.printCalibrated();
-    // d_sensors.calculateVariance();
-    // d_sensors.printVariance();
+  //   d_sensors.getCalibrated();
+  //   // d_sensors.printCalibrated();
+  //   // d_sensors.calculateVariance();
+  //   // d_sensors.printVariance();
 
-    // Paul: I was using the following 4 lines to look at
-    //       any difference between the weighted measurement
-    //       for digital vs analog
-    // Serial.print(digitalWeightedMeasurement() * 10.0);
-    // Serial.print(",");
-    // Serial.print(analogWeightedMeasurement() * 10.0);
-    // Serial.print("\n");
+  //   // Paul: I was using the following 4 lines to look at
+  //   //       any difference between the weighted measurement
+  //   //       for digital vs analog
+  //   // Serial.print(digitalWeightedMeasurement() * 10.0);
+  //   // Serial.print(",");
+  //   // Serial.print(analogWeightedMeasurement() * 10.0);
+  //   // Serial.print("\n");
 
-    // Paul: I was using the following 4 lines to look at
-    //       any difference in variance between analog vs
-    //       digital, but only for sensor 2 (middle front)
-    // Serial.print(a_sensors.variance[2] * 10000.0);
-    // Serial.print(",");
-    // Serial.print(d_sensors.variance[2] * 10000.0);
-    // Serial.print("\n");
+  //   // Paul: I was using the following 4 lines to look at
+  //   //       any difference in variance between analog vs
+  //   //       digital, but only for sensor 2 (middle front)
+  //   // Serial.print(a_sensors.variance[2] * 10000.0);
+  //   // Serial.print(",");
+  //   // Serial.print(d_sensors.variance[2] * 10000.0);
+  //   // Serial.print("\n");
 
-    // Paul: I was using the below 4 lines to quickly check that
-    //       the encoders were both going up/down in a consistent
-    //       and sensible way when I push the robot by hand.
-    // Serial.print(count_e0);
-    // Serial.print(",");
-    // Serial.print(count_e1);
-    // Serial.print("\n");
+  //   // Paul: I was using the below 4 lines to quickly check that
+  //   //       the encoders were both going up/down in a consistent
+  //   //       and sensible way when I push the robot by hand.
+  //   // Serial.print(count_e0);
+  //   // Serial.print(",");
+  //   // Serial.print(count_e1);
+  //   // Serial.print("\n");
 
-    // Paul: I used the following lines to test the kinematics
-    //       was working ok.  Note that, in loop(), you'll also
-    //       want to call kinematics.update() regularly. I 
-    //       recommend you call it every 20ms or something,
-    //       not just every time loop() happens.
-    // kinematics.update(count_e0, count_e1);
-    // Serial.print(kinematics.xPos);
-    // Serial.print(",");
-    // Serial.print(kinematics.yPos);    
-    // Serial.print(",");
-    // Serial.print(kinematics.theta);
-    // Serial.print("\n");
+  //   // Paul: I used the following lines to test the kinematics
+  //   //       was working ok.  Note that, in loop(), you'll also
+  //   //       want to call kinematics.update() regularly. I 
+  //   //       recommend you call it every 20ms or something,
+  //   //       not just every time loop() happens.
+  //   kinematics.update(count_e0, count_e1);
+  //   Serial.print(kinematics.xPos);
+  //   Serial.print(",");
+  //   Serial.print(kinematics.yPos);    
+  //   Serial.print(",");
+  //   Serial.print(kinematics.theta);
+  //   Serial.print("\n");
 
-    delay(20);
+  //   delay(20);
 
-  }
+  // }
 
   // Prepare to start.
   update_ts = millis();
@@ -234,48 +234,13 @@ void loop() {
       update_ts = millis();
 
       // a_sensors.getCalibrated();
+      // analogFollowLine();
+
       // d_sensors.getCalibrated();
-
-      // // Serial.print("Digital:");
-      // // d_sensors.printCalibrated();
-      
-      // // Paul: you need to also call these
-      //  a_sensors.calculateVariance();
-      //  d_sensors.calculateVariance();
-      
-      // float analogVariance = a_sensors.calculateAverageVariance();
-      // float digitalVariance = d_sensors.calculateAverageVariance();
-      
-      // // Serial.print("analogVariance:");
-      // // a_sensors.printVariance();
-      // // Serial.print("DigitalVariance:");
-      // // d_sensors.printVariance();
-
-      // // Paul: This bit needs work...
-
-      //       float w;
-      //       if (analogVariance < digitalVariance) {
-
-      //         // Paul: suggested the below, but 
-      //         //       your original functions will work.
-      //         // w = analogWeightedMeasurement();
-              
-      //         analogFollowLine();
-              
-      //       } else {
-
-      //         // Paul: suggested the below, but 
-      //         //       your original functions will work.
-      //         w = digitalWeightedMeasurement();
-
-      //         digitalFollowLine();
-
-      //       }
-      
-      // Paul: could call a generic line following function
-      // lineFollowing(w);
       // digitalFollowLine();
-
+      
+      lineFollowing();
+      
       if (results_index < MAX_RESULTS) {
 
         // Just as an example.
@@ -287,17 +252,17 @@ void loop() {
 
       } else {
 
-        // filled up results array? experiment over.
-        // state = STATE_PRINT_RESULTS;
+        //filled up results array? experiment over.
+        state = STATE_PRINT_RESULTS;
 
-        // Might as well stop the robot
-        // motors.setMotorsPWM(0, 0);
+        //Might as well stop the robot
+        motors.setMotorsPWM(0, 0);
 
-        // // Beep to signal end
-        // pinMode(6, OUTPUT);
-        // analogWrite(6, 120);
-        // delay(5);
-        // analogWrite(6, 0);
+        // Beep to signal end
+        pinMode(6, OUTPUT);
+        analogWrite(6, 120);
+        delay(5);
+        analogWrite(6, 0);
 
       }
 
