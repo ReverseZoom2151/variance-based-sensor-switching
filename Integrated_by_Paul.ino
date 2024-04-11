@@ -1,6 +1,8 @@
 #include "analoglinesensors.h"
 #include "digitallinesensors.h"
 #include "motors.h"
+#include "encoders.h"
+#include "kinematics.h"
 
 #define MAX_RESULTS 100
 #define STATE_RUNNING_TRIAL 0
@@ -11,8 +13,7 @@
 
 AnalogLineSensors_c a_sensors;
 DigitalLineSensors_c d_sensors;
-
-// For motor control
+Kinematics_c kinematics;
 Motors_c motors;
 
 // variables for storing results
@@ -21,8 +22,12 @@ float results[MAX_RESULTS];
 int results_index;
 int state;
 const float BiasPWM = 30.0; // starts with a positive forward bias
-const float MaxTurnPWM = 20.0; 
+const float MaxTurnPWM = 20.0;
 
+
+// Paul: I think you no longer need this function.
+//       But if you do use it, watch out for the bug
+//       about using unsigned long.
 bool digitalLineDetected() {
 
   d_sensors.getCalibrated();
@@ -36,9 +41,13 @@ bool digitalLineDetected() {
 
 }
 
+
+// Paul: I think you no longer need this function.
+//       But if you do use it, watch out for the bug
+//       about using unsigned long.
 bool analogLineDetected() {
 
-  a_sensors.getCalibrated(); 
+  a_sensors.getCalibrated();
 
   unsigned long analogLeftSensorReading = a_sensors.calibrated[1]; // DN2
   unsigned long analogMiddleSensorReading = a_sensors.calibrated[2]; // DN3
@@ -51,21 +60,21 @@ bool analogLineDetected() {
 
 float analogWeightedMeasurement() {
 
-  a_sensors.getCalibrated(); 
+  a_sensors.getCalibrated();
 
-  unsigned long analogLeftSensorReading = a_sensors.calibrated[1]; // DN2
-  unsigned long analogRightSensorReading = a_sensors.calibrated[3]; // DN4
-  unsigned long sum = analogLeftSensorReading + analogRightSensorReading;
+  // Paul: needs to be a float. You can also acccess
+  //       the variables in a class (a_sensors) directly
+  //       with the dot operator.
+  float sum = a_sensors.calibrated[1] + a_sensors.calibrated[3];
 
-  float analogLeftNormalized = (float)analogLeftSensorReading / sum;
-  float analogRightNormalized = (float)analogRightSensorReading / sum;
-  float analogLeftWeighted = 2.0 * analogLeftNormalized;
-  float analogRightWeighted = 2.0 * analogRightNormalized;
+  if (sum == 0.0) return 0.0;
+
+  float analogLeftWeighted = (float)a_sensors.calibrated[1] / sum;
+  float analogRightWeighted = (float)a_sensors.calibrated[3] / sum;
   float W = analogRightWeighted - analogLeftWeighted;
-  // float W = analogLeftWeighted - analogRightWeighted;
 
   // Serial.print("Analog Weighted Measurement (W): ");
-  // Serial.println(W); 
+  // Serial.println(W);
 
   return W;
 
@@ -73,21 +82,21 @@ float analogWeightedMeasurement() {
 
 float digitalWeightedMeasurement() {
 
-  d_sensors.getCalibrated(); 
+  d_sensors.getCalibrated();
 
-  unsigned long digitalLeftSensorReading = d_sensors.calibrated[1]; // DN2
-  unsigned long digitalRightSensorReading = d_sensors.calibrated[3]; // DN4
-  unsigned long sum = digitalLeftSensorReading + digitalRightSensorReading;
+  // Paul: needs to be a float. You can also acccess
+  //       the variables in a class (a_sensors) directly
+  //       with the dot operator.
+  float sum = d_sensors.calibrated[1] + d_sensors.calibrated[3];
 
-  float digitalLeftNormalized = (float)digitalLeftSensorReading / sum;
-  float digitalRightNormalized = (float)digitalRightSensorReading / sum;
-  float digitalLeftWeighted = 2.0 * digitalLeftNormalized;
-  float digitalRightWeighted = 2.0 * digitalRightNormalized;
+  if (sum == 0.0) return 0.0;
+
+  float digitalLeftWeighted = (float)d_sensors.calibrated[1] / sum;
+  float digitalRightWeighted = (float)d_sensors.calibrated[3] / sum;
   float W = digitalRightWeighted - digitalLeftWeighted;
-  // float W = digitalLeftWeighted - digitalRightWeighted;
 
-  // Serial.print("Digital Weighted Measurement (W): ");
-  // Serial.println(W); 
+  // Serial.print("Digital weighted measurement (W): ");
+  // Serial.println(W);
 
   return W;
 
@@ -95,96 +104,53 @@ float digitalWeightedMeasurement() {
 
 void analogFollowLine() {
 
-  a_sensors.getCalibrated(); 
+  a_sensors.getCalibrated();
 
-  unsigned long analogFarLeftSensorReading = a_sensors.calibrated[0]; // DN1
-  unsigned long analogLeftSensorReading = a_sensors.calibrated[1]; // DN2
-  unsigned long analogMiddleSensorReading = a_sensors.calibrated[2]; // DN3
-  unsigned long analogRightSensorReading = a_sensors.calibrated[3]; // DN4
-  unsigned long analogFarRightSensorReading = a_sensors.calibrated[4]; // DN5
+  float W = analogWeightedMeasurement();
+  float LeftPWM = BiasPWM + (MaxTurnPWM * W);
+  float RightPWM = BiasPWM - (MaxTurnPWM * W);
 
-  if (analogLineDetected()) { 
-
-    float W = analogWeightedMeasurement();
-    float LeftPWM = BiasPWM + (MaxTurnPWM * W);
-    float RightPWM = BiasPWM - (MaxTurnPWM * W);
-    
-    motors.setMotorsPWM(LeftPWM, RightPWM);  
-  
-  }
-  
-  if (analogFarLeftSensorReading >= ANALOG_THRESHOLD) {
-
-    // executes a sharp left turn for corners (90 degrees)
-    motors.spinLeft(BiasPWM, 250);
-  
-  } else if (analogFarRightSensorReading >= ANALOG_THRESHOLD) {
-
-    // executes a sharp left turn for corners (90 degrees)
-    motors.spinRight(BiasPWM, 250);
-  
-  }
+  motors.setMotorsPWM(LeftPWM, RightPWM);
 
 }
 
 void digitalFollowLine() {
 
-  d_sensors.getCalibrated(); 
+  d_sensors.getCalibrated();
 
-  unsigned long digitalFarLeftSensorReading = d_sensors.calibrated[0]; // DN1
-  unsigned long digitalLeftSensorReading = d_sensors.calibrated[1]; // DN2
-  unsigned long digitalMiddleSensorReading = d_sensors.calibrated[2]; // DN3
-  unsigned long digitalRightSensorReading = d_sensors.calibrated[3]; // DN4
-  unsigned long digitalFarRightSensorReading = d_sensors.calibrated[4]; // DN5
+  float W = digitalWeightedMeasurement();
+  float LeftPWM = BiasPWM + (MaxTurnPWM * W);
+  float RightPWM = BiasPWM - (MaxTurnPWM * W);
 
-  if (digitalLineDetected()) { 
-
-    float W = digitalWeightedMeasurement();
-    float LeftPWM = BiasPWM + (MaxTurnPWM * W);
-    float RightPWM = BiasPWM - (MaxTurnPWM * W);
-    
-    motors.setMotorsPWM(LeftPWM, RightPWM);  
-  
-  }
-
-  if (digitalFarLeftSensorReading >= DIGITAL_THRESHOLD) {
-
-    // executes a sharp left turn for corners (90 degrees)
-    motors.spinLeft(BiasPWM, 250);
-  
-  } else if (digitalFarRightSensorReading >= DIGITAL_THRESHOLD) {
-
-    // executes a sharp left turn for corners (90 degrees)
-    motors.spinRight(BiasPWM, 250);
-  
-  }
+  motors.setMotorsPWM(LeftPWM, RightPWM);
 
 }
 
 void setup() {
-  
+
   // put your setup code here, to run once:
 
   Serial.begin(9600);
   delay(2000);
   Serial.println("***RESET***");
 
-  // To calibrate, we set the robot spinning on the spot
-  // briefly, and call the calibration routine.
-  // calibrate() is blocking, so it will take the time it
-  // needs.
-  // Place the robot so the sensors will sweep over
-  // black and white surfaces.
+  // Paul: setup encoders ready to use
+  setupEncoder0();
+  setupEncoder1();
+
+  // To calibrate, we set the robot spinning on the spot briefly, and call the calibration routine.
+  // calibrate() is blocking, so it will take the time it needs.
+  // Place the robot so the sensors will sweep over black and white surfaces.
   motors.setMotorsPWM(-80, 80); // start spinning
   a_sensors.calibrate();
-  // d_sensors.calibrate();
+  d_sensors.calibrate();
 
   // Stop spinning!
   motors.setMotorsPWM(0, 0);
 
   // Some beeping + delay so you can move it to the start location
   int count = 0;
-  
+
   while (count < 10) {
 
     pinMode(6, OUTPUT);
@@ -193,27 +159,67 @@ void setup() {
     analogWrite(6, 0);
     delay(500);
     count++;
-    
+
   }
 
   // Paul: debugging
-  //        testing both analog and digital can be done
-  //        one after the other, seems to work :)
-  //        You can uncomment each set to see what it is
-  //        doing.
-  // while (true) {
+  //       testing both analog and digital can be done one after the other, seems to work :)
+  //       You can uncomment each set to see what it is doing.
+  while (true) {
 
-    // a_sensors.getCalibrated();
-    // a_sensors.printCalibrated();
+    // Here, we still need to call getCalibrated()
+    // and calculateVariance().
+
+    a_sensors.getCalibrated();
+    a_sensors.printCalibrated();
     // a_sensors.calculateVariance();
     // a_sensors.printVariance();
 
-    // d_sensors.getCalibrated();
-    // d_sensors.printCalibrated();
+    d_sensors.getCalibrated();
+    d_sensors.printCalibrated();
     // d_sensors.calculateVariance();
     // d_sensors.printVariance();
 
-  // }
+    // Paul: I was using the following 4 lines to look at
+    //       any difference between the weighted measurement
+    //       for digital vs analog
+    // Serial.print(digitalWeightedMeasurement() * 10.0);
+    // Serial.print(",");
+    // Serial.print(analogWeightedMeasurement() * 10.0);
+    // Serial.print("\n");
+
+    // Paul: I was using the following 4 lines to look at
+    //       any difference in variance between analog vs
+    //       digital, but only for sensor 2 (middle front)
+    // Serial.print(a_sensors.variance[2] * 10000.0);
+    // Serial.print(",");
+    // Serial.print(d_sensors.variance[2] * 10000.0);
+    // Serial.print("\n");
+
+    // Paul: I was using the below 4 lines to quickly check that
+    //       the encoders were both going up/down in a consistent
+    //       and sensible way when I push the robot by hand.
+    // Serial.print(count_e0);
+    // Serial.print(",");
+    // Serial.print(count_e1);
+    // Serial.print("\n");
+
+    // Paul: I used the following lines to test the kinematics
+    //       was working ok.  Note that, in loop(), you'll also
+    //       want to call kinematics.update() regularly. I 
+    //       recommend you call it every 20ms or something,
+    //       not just every time loop() happens.
+    kinematics.update(count_e0, count_e1);
+    Serial.print(kinematics.xPos);
+    Serial.print(",");
+    Serial.print(kinematics.yPos);    
+    Serial.print(",");
+    Serial.print(kinematics.theta);
+    Serial.print("\n");
+
+    delay(20);
+
+  }
 
   // Prepare to start.
   update_ts = millis();
@@ -225,10 +231,10 @@ void setup() {
 void loop() {
 
   if (state == STATE_RUNNING_TRIAL) {
-    
+
     // Every 100ms...
     if (millis() - update_ts > 100) {
-      
+
       update_ts = millis();
 
       a_sensors.getCalibrated();
@@ -236,23 +242,43 @@ void loop() {
 
       // Serial.print("Digital:");
       // d_sensors.printCalibrated();
-      // a_sensors.calculateVariance();
-      // d_sensors.calculateVariance();
-      analogVariance = a_sensors.calculateAverageVariance();
-      digitalVariance = d_sensors.calculateAverageVariance();
-      // // Serial.print("analogVariance:");
-      // // a_sensors.printVariance();
-      // // Serial.print("DigitalVariance:");
-      // // d_sensors.printVariance();
+      
+      // Paul: you need to also call these
+       a_sensors.calculateVariance();
+       d_sensors.calculateVariance();
+      
+      float analogVariance = a_sensors.calculateAverageVariance();
+      float digitalVariance = d_sensors.calculateAverageVariance();
+      
+      // Serial.print("analogVariance:");
+      // a_sensors.printVariance();
+      // Serial.print("DigitalVariance:");
+      // d_sensors.printVariance();
 
-      if (analogVariance < digitalVariance) {
-        analogFollowLine();
-      } else {
-        digitalFollowLine();
-        }
-      // analogFollowLine();
-      //digitalFollowLine();
+      // Paul: This bit needs work...
 
+            float w;
+            if (analogVariance < digitalVariance) {
+
+              // Paul: suggested the below, but 
+              //       your original functions will work.
+              // w = analogWeightedMeasurement();
+              
+              analogFollowLine();
+              
+            } else {
+
+              // Paul: suggested the below, but 
+              //       your original functions will work.
+              w = digitalWeightedMeasurement();
+
+              digitalFollowLine();
+
+            }
+      
+      // Paul: could call a generic line following function
+      // lineFollowing(w);
+      // digitalFollowLine();
 
       if (results_index < MAX_RESULTS) {
 
@@ -264,7 +290,7 @@ void loop() {
         results_index++;
 
       } else {
-        
+
         // filled up results array? experiment over.
         // state = STATE_PRINT_RESULTS;
 
@@ -275,26 +301,24 @@ void loop() {
         // pinMode(6, OUTPUT);
         // analogWrite(6, 120);
         // delay(5);
-        // analogWrite(6, 0); 
+        // analogWrite(6, 0);
 
       }
 
     }
-    
+
   } else if (state == STATE_PRINT_RESULTS) {
 
     // Just print the results, and give a delay so
     // you have time to copy-paste
-
     for (int i = 0; i < MAX_RESULTS; i++) {
 
       Serial.print(results[i]);
       Serial.print(",");
-    
-    }
-    
-    Serial.print("\n\n\n");
 
+    }
+
+    Serial.print("\n\n\n");
     delay(3000);
 
   }
