@@ -245,8 +245,8 @@ class AnalogLineSensors_c {
 
       // Paul: I found this takes around 60ms and is
       //       consistent, which is surprising
-      //Serial.print("Analogue Variance calculation took: ");
-      //Serial.println( (int)( end_time - start_time ) );
+      // Serial.print("Analogue Variance calculation took: ");
+      // Serial.println( (int)( end_time - start_time ) );
     
     }
     
@@ -279,13 +279,20 @@ class AnalogLineSensors_c {
     }
 
     float calculateAverageVariance() {
+
       float totalVariance = 0.0;
+      
       calculateVariance();
+      
       for (int i = 0; i < 5; i++) {
+      
         totalVariance += variance[i];
-        }
-        return totalVariance / 5.0f; 
-  }
+      
+      }
+
+      return totalVariance / 5.0f; 
+  
+    }
 
 };
 
