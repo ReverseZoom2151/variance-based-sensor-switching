@@ -35,10 +35,14 @@ class Kinematics_c {
 
     }
 
-     void printTheta() {
+    void printTheta() {
         for (int i = 0; i < currentIndex; i++) {
             Serial.print(thetaLog[i]);
+            Serial.print(",");
+
         }
+       Serial.print("\n");
+
     }
 
 
