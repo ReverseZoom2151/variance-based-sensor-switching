@@ -18,6 +18,10 @@ class Kinematics_c {
     const float encoderCountsPerRevolution = 358.3; // encoder counts per wheel revolution
     const float mmPerCount = (2.0 * PI * wheelRadius) / encoderCountsPerRevolution; // mm traveled per encoder count
 
+    int thetaLogSize = 100;
+    float thetaLog[50];     // Array to store theta values
+    
+
   public:
 
     // Paul: moved these to public area so we can access them
@@ -25,10 +29,18 @@ class Kinematics_c {
     float xPos = 0; // X position of the robot in the global frame
     float yPos = 0; // Y position (remains 0 in the initial implementation)
     float theta = 0; // robot's orientation in radians
+    int currentIndex = 0; 
 
     Kinematics_c() {
 
     }
+
+     void printTheta() {
+        for (int i = 0; i < currentIndex; i++) {
+            Serial.print(thetaLog[i]);
+        }
+    }
+
 
     // Paul: this simple function should be working...
     // function used to update kinematics
@@ -56,6 +68,13 @@ class Kinematics_c {
       // calculates change in orientation (θ_R')
       float deltaTheta = (distanceRight - distanceLeft) / (wheel_separation * 2.0);
       theta += deltaTheta;
+
+      thetaLog[currentIndex] = theta;
+        currentIndex++;
+
+      if (currentIndex >= thetaLogSize) {
+          currentIndex = 0; // Reset index for circular buffer behavior
+        }
 
     }
 
