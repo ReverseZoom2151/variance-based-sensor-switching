@@ -125,8 +125,8 @@ void lineFollowing() {
     // Calculate variances
     a_sensors.getCalibrated();
     d_sensors.getCalibrated();
-    //a_sensors.calculateVariance();
-    //d_sensors.calculateVariance();
+    a_sensors.calculateVariance();
+    d_sensors.calculateVariance();
     // a_sensors.printVariance();
     //d_sensors.printVariance();
     kinematics.update(count_e0, count_e1);
@@ -141,16 +141,16 @@ void lineFollowing() {
         // Use analog method
         a_sensors.getCalibrated(); // Get updated calibrated values
         W = analogWeightedMeasurement();
-        Serial.print("AnalogVariance: ");
-        Serial.print("\n");
-        a_sensors.printVariance();
+    //     Serial.print("AnalogVariance: ");
+    //     Serial.print("\n");
+    //     a_sensors.printVariance();
     } else {
         // Use digital method
         d_sensors.getCalibrated(); // Get updated calibrated values
         W = digitalWeightedMeasurement();
-        Serial.print("DigitalVariance: ");
-        Serial.print("\n");
-        d_sensors.printVariance();
+        // Serial.print("DigitalVariance: ");
+        // Serial.print("\n");
+        // d_sensors.printVariance();
     }
 
     // Calculate motor PWM values
@@ -183,7 +183,7 @@ void setup() {
   // Place the robot so the sensors will sweep over black and white surfaces.
   motors.setMotorsPWM(-80, 80); // start spinning
   a_sensors.calibrate();
-  d_sensors.calibrate();
+  //d_sensors.calibrate();
 
   // Stop spinning!
   motors.setMotorsPWM(0, 0);
@@ -205,15 +205,16 @@ void setup() {
   // Paul: debugging
   //       testing both analog and digital can be done one after the other, seems to work :)
   //       You can uncomment each set to see what it is doing.
-  //  while (true) {
+   while (true) {
 
 //   //   // Here, we still need to call getCalibrated()
 //   //   // and calculateVariance().
 
-     //a_sensors.getCalibrated();
-     //a_sensors.printCalibrated();
-     // a_sensors.calculateVariance();
-     // a_sensors.printVariance();
+     a_sensors.getCalibrated();
+     a_sensors.printCalibrated();
+     a_sensors.calculateVariance();
+    //  a_sensors.printVariance();
+    a_sensors.calculateAverageVariance();
 
   //  d_sensors.getCalibrated();
     //d_sensors.printCalibrated();
@@ -258,9 +259,9 @@ void setup() {
 //   //   Serial.print(kinematics.theta);
 //   //   Serial.print("\n");
 
-    //  delay(20);
+     delay(10);
 
-    // }
+    }
 
   // Prepare to start.
   update_ts = millis();
@@ -286,7 +287,7 @@ void loop() {
       //a_sensors.printVariance();
 
       // d_sensors.getCalibrated();
-      // digitalFollowLine();
+      //digitalFollowLine();
       
       lineFollowing();
       
