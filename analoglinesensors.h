@@ -284,13 +284,18 @@ class AnalogLineSensors_c {
       
       calculateVariance();
       
-      for (int i = 0; i < 5; i++) {
+      for (int i = 1; i < 4; i++) {
       
         totalVariance += variance[i];
+        Serial.println(totalVariance, 6);
+        Serial.print(",");
+
+        delay(10);
       
       }
 
       return totalVariance / 5.0f; 
+      
   
     }
 
