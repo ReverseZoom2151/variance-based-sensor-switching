@@ -49,7 +49,7 @@ The control logic employs weighted sensor measurements to determine the magnitud
 ## Experimental Methodology
 ### Track Configurations 🛤️
 The project evaluates three line-following methods (analog, digital, switching) on both straight and curved track segments. Each method undergoes multiple trials to ensure robust statistical analysis.
-Experimental Procedure 🧪
+### Experimental Procedure 🧪
 - Setup and Calibration: Ensuring consistent environmental conditions and proper sensor calibration.
 - Trial Execution: Running trials for each method, collecting data on theta values and sensor variances.
 - Data Storage: Storing recorded values for analysis.
