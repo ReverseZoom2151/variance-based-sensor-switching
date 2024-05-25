@@ -46,7 +46,7 @@ Variance calculations gauge the consistency of sensor readings. Lower variance i
 The selection logic evaluates the consistency of sensor readings through variance. The robot selects the sensor array with the lower variance, ensuring the most stable data guides its navigation.
 ### Line-following Control Logic 🎯
 The control logic employs weighted sensor measurements to determine the magnitude and direction of corrective actions. This ensures the robot stays true to the course, with weights assigned to sensor inputs based on their relative positions.
-Experimental Methodology
+## Experimental Methodology
 ### Track Configurations 🛤️
 The project evaluates three line-following methods (analog, digital, switching) on both straight and curved track segments. Each method undergoes multiple trials to ensure robust statistical analysis.
 Experimental Procedure 🧪
