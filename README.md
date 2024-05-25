@@ -34,3 +34,27 @@ The RT_Results.ipynb Jupyter Notebook contains data analysis and visualization o
 - Curve Analysis: Inspects how the robot handles curved paths, identifying potential issues and areas for improvement.
 ### Event Handling and Interactive Analysis 🕹️
 Interactivity and real-time analysis are crucial for robotics development. The project implements interactive elements using Jupyter Notebook, allowing users to interact with the data and visualize the robot's performance dynamically.
+
+## Implementation Details
+### Sensor Calibration Procedures 🛠️
+Calibration aligns the analog and digital sensor outputs to a standardized range, enhancing the robot’s sensitivity to the contrast between the black line and its white background. The calibration process involves:
+- Initialization 🔄: The robot rotates over contrasting surfaces to capture a range of sensor readings.
+- Normalization 🔍: Sensor readings are normalized to account for environmental variances, ensuring accurate detection across different conditions.
+### Variance Calculations 📏
+Variance calculations gauge the consistency of sensor readings. Lower variance indicates more reliable and stable readings. The project implements algorithms to compute the variance for each sensor, using this data to dynamically switch between sensor arrays.
+### Sensor Measurement Selection Logic 🧠
+The selection logic evaluates the consistency of sensor readings through variance. The robot selects the sensor array with the lower variance, ensuring the most stable data guides its navigation.
+### Line-following Control Logic 🎯
+The control logic employs weighted sensor measurements to determine the magnitude and direction of corrective actions. This ensures the robot stays true to the course, with weights assigned to sensor inputs based on their relative positions.
+Experimental Methodology
+### Track Configurations 🛤️
+The project evaluates three line-following methods (analog, digital, switching) on both straight and curved track segments. Each method undergoes multiple trials to ensure robust statistical analysis.
+Experimental Procedure 🧪
+- Setup and Calibration: Ensuring consistent environmental conditions and proper sensor calibration.
+- Trial Execution: Running trials for each method, collecting data on theta values and sensor variances.
+- Data Storage: Storing recorded values for analysis.
+### Results and Discussion 📊
+The experimental results demonstrate that the variance-based switching mechanism enhances sensor reading consistency. However, the method introduces instability, resulting in less smooth navigation compared to using analog sensors alone. The findings highlight the trade-off between sensor accuracy and operational smoothness, indicating areas for further refinement.
+
+## Conclusion
+The study reveals that while the variance-based switching mechanism improves sensor reading reliability, it requires further development to enhance the robot's overall navigation performance. Future work should focus on refining the switching algorithm and integrating more sophisticated filtering techniques to mitigate the impact of erratic sensor data.
